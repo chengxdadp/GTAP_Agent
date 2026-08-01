@@ -1,0 +1,10 @@
+{
+  "baseline_year": 2024,
+  "model_name": "gtap2015_10x10",
+  "model_dir": "D:\\RD\\GTAPAgent\\runtime\\rungtap\\gtap2015_10x10",
+  "source_cmf": "D:\\RD\\GTAPAgent\\result\\05_baseline_update\\cmf\\baseline_update_2014_to_2024.cmf",
+  "basedata": "D:\\RD\\GTAPAgent\\asset\\basedata_2024.har",
+  "baserate": "D:\\RD\\GTAPAgent\\asset\\baserate_2024.har",
+  "aggregation_mapping": "D:\\RD\\GTAPAgent\\runtime\\rungtap\\gtap2015_10x10\\aggregation_mapping.txt",
+  "set_at": "2026-07-17T16:19:10"
+}

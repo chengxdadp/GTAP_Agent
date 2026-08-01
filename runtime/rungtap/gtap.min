@@ -1,0 +1,3091 @@
+#FILES
+Logical Name         In/Out Ud  Type Actual Name
+GTAPSETS              In     n  HAR
+ file with set specification
+GTAPDATA              In     y  HAR
+ file containing all base data
+GTAPPARM              In     n  HAR
+ file containing behavioral parameters
+(Display)             Out    n  DIS
+(Solution)            Out    y  SL4
+(Equations)           Out    y  EQ4
+#TABFILE
+gtap.tab
+#TMDATE
+at 13:51:02 on 09-SEP-2020
+#STIFILE
+%none
+#SETS
+   12
+    1 REG                 -1  u regions in the model
+    2 TRAD_COMM           -1  u traded commodities
+    3 MARG_COMM           -1  u margin commodities
+    4 NMRG_COMM           -1  u non-margin commodities
+    5 CGDS_COMM           -1  u capital goods commodities
+    6 ENDW_COMM           -1  u endowment commodities
+    7 PROD_COMM           -1  u produced commodities
+    8 DEMD_COMM           -1  u demanded commodities
+    9 NSAV_COMM           -1  u non-savings commodities
+   10 ENDWS_COMM          -1  u sluggish endowment commodities
+   11 ENDWM_COMM          -1  u mobile endowment commodities
+   12 ENDWC_COMM           1  k capital endowment commodity
+capital     
+#VARIABLES
+       234
+    1 psave                   -1     1 ? price of savings in region r
+    1
+    2 qsave                   -1     1 ? regional demand for NET savings
+    1
+    3 pgd                     -1     2 ? price of domestic i in government consumption in s
+    2    1
+    4 qgd                     -1     2 ? government hhld demand for domestic i in region s
+    2    1
+    5 pm                      -1     2 ? market price of commodity i in region r
+    9    1
+    6 pgm                     -1     2 ? price of imports of i in government consumption in s
+    2    1
+    7 qgm                     -1     2 ? government hhld demand for imports of i in region s
+    2    1
+    8 pim                     -1     2 ? market price of composite import i in region r
+    2    1
+    9 ppd                     -1     2 ? price of domestic i to private households in s
+    2    1
+   10 qpd                     -1     2 ? private hhld demand for domestic i in region s
+    2    1
+   11 ppm                     -1     2 ? price of imports of i by private households in s
+    2    1
+   12 qpm                     -1     2 ? private hhld demand for imports of i in region s
+    2    1
+   13 ps                      -1     2 ? supply price of commodity i in region r
+    9    1
+   14 qo                      -1     2 ? industry output of commodity i in region r
+    9    1
+   15 pfe                     -1     3 ? firms price for endowment commodity i in ind. j, region r
+    6    7    1
+   16 qfe                     -1     3 ? demand for endowment i for use in ind. j in region r
+    6    7    1
+   17 pfd                     -1     3 ? price index for domestic purchases of i by j in region s
+    2    7    1
+   18 qfd                     -1     3 ? domestic good i demanded by industry j in region s
+    2    7    1
+   19 pfm                     -1     3 ? price index for imports of i by j in region s
+    2    7    1
+   20 qfm                     -1     3 ? demand for i by industry j in region s
+    2    7    1
+   21 pmes                    -1     3 ? market price of sluggish endowment i used by j in r
+   10    7    1
+   22 kb                      -1     1 ? beginning-of-period capital stock in r
+    1
+   23 pcgds                   -1     1 ? price of investment goods = ps("cgds",r)
+    1
+   24 pms                     -1     3 ? domestic price for good i supplied from r to region s
+    2    1    1
+   25 qxs                     -1     3 ? export sales of commodity i from r to region s
+    2    1    1
+   26 pcif                    -1     3 ? CIF world price of commodity i supplied from r to s
+    2    1    1
+   27 pfob                    -1     3 ? FOB world price of commodity i supplied from r to s
+    2    1    1
+   28 qst                     -1     2 ? sales of m from r to international transport
+    3    1
+   29 y                       -1     1 ? regional household income in region r
+    1
+   30 pop                     -1     1 ? regional population
+    1
+   31 qoes                    -1     3 ? supply of sluggish endowment i used by j in r
+   10    7    1
+   32 endwslack               -1     2 ? slack variable in endowment market clearing condition
+    6    1
+   33 pgov                    -1     1 ? price index for govt hhld expenditure in region r
+    1
+   34 yg                      -1     1 ? regional government consumption expenditure in region r
+    1
+   35 ug                      -1     1 ? per capita utility from govt expend. in region r
+    1
+   36 ppriv                   -1     1 ? price index for private consumption expenditure in region r
+    1
+   37 uepriv                  -1     1 ? elasticity of cost wrt utility from private consumption
+    1
+   38 yp                      -1     1 ? regional private consumption expenditure in region r
+    1
+   39 up                      -1     1 ? per capita utility from private expend. in region r
+    1
+   40 to                      -1     2 ? output (or income) tax in region r
+    9    1
+   41 qim                     -1     2 ? aggregate imports of i in region s, market price weights
+    2    1
+   42 globalcgds               1     0 ? global supply of capital goods for NET investment
+   43 pcgdswld                 1     0 ? world average price of capital goods (net investment weights)
+   44 del_taxrgc              -1     1 ? change in ratio of government consumption tax to INCOME
+    1
+   45 del_taxrpc              -1     1 ? change in ratio of private consumption tax to INCOME
+    1
+   46 del_taxriu              -1     1 ? change in ratio of tax on intermediate usage to INCOME
+    1
+   47 del_taxrfu              -1     1 ? change in ratio of tax on primary factor usage to INCOME
+    1
+   48 del_taxrout             -1     1 ? change in ratio of output tax to INCOME
+    1
+   49 del_taxrexp             -1     1 ? change in ratio of export tax to INCOME
+    1
+   50 del_taxrimp             -1     1 ? change in ratio of import tax to INCOME
+    1
+   51 del_taxrinc             -1     1 ? change in ratio of income tax to INCOME
+    1
+   52 pg                      -1     2 ? government consumption price for commodity i in region r
+    2    1
+   53 qg                      -1     2 ? government hhld demand for commodity i in region r
+    2    1
+   54 pp                      -1     2 ? private consumption price for commodity i in region r
+    2    1
+   55 qp                      -1     2 ? private hhld demand for commodity i in region r
+    2    1
+   56 tp                      -1     1 ? comm.-, source-gen. shift in tax on private cons.
+    1
+   57 atpd                    -1     2 ? power of tax on domestic i purchased by private hhld in r
+    2    1
+   58 atpm                    -1     2 ? power of tax on imported i purchased by private hhld in r
+    2    1
+   59 pva                     -1     2 ? firms price of value added in industry j of region r
+    7    1
+   60 qva                     -1     2 ? value added in industry j of region r
+    7    1
+   61 pf                      -1     3 ? firms price for commodity i for use by j in r
+    2    7    1
+   62 qf                      -1     3 ? demand for commodity i for use by j in region r
+    2    7    1
+   63 ao                      -1     2 ? output augmenting technical change in sector j of r
+    7    1
+   64 ava                     -1     2 ? value added augmenting tech change in sector i of r
+    7    1
+   65 af                      -1     3 ? composite intermed. input i augmenting tech change by j of r
+    2    7    1
+   66 afe                     -1     3 ? primary factor i augmenting tech change by j of r
+    6    7    1
+   67 ams                     -1     3 ? import i from region r augmenting tech change in region s
+    2    1    1
+   68 aosec                   -1     1 ? output tech change of sector j, worldwide
+    7
+   69 aoreg                   -1     1 ? output tech change in region r
+    1
+   70 aoall                   -1     2 ? output augmenting technical change in sector j of r
+    7    1
+   71 avasec                  -1     1 ? value added tech change of sector j, worldwide
+    7
+   72 avareg                  -1     1 ? value added tech change in region r
+    1
+   73 afcom                   -1     1 ? intermediate tech change of input i, worldwide
+    2
+   74 afsec                   -1     1 ? intermediate tech change of sector j, worldwide
+    7
+   75 afreg                   -1     1 ? intermediate tech change in region r
+    1
+   76 afall                   -1     3 ? intermediate input i augmenting tech change by j in r
+    2    7    1
+   77 afecom                  -1     1 ? factor input tech change of input i, worldwide
+    6
+   78 afesec                  -1     1 ? factor input tech change of sector j, worldwide
+    7
+   79 afereg                  -1     1 ? factor input tech change in region r
+    1
+   80 afeall                  -1     3 ? primary factor i augmenting tech change sector j in r
+    6    7    1
+   81 profitslack             -1     2 ? slack variable in the zero profit equation
+    7    1
+   82 rental                  -1     1 ? rental rate on capital = ps("capital",r)
+    1
+   83 ke                      -1     1 ? end-of-period capital stock in r
+    1
+   84 rore                    -1     1 ? expected net rate of return on capital stock in r
+    1
+   85 rorc                    -1     1 ? current net rate of return on capital stock in r
+    1
+   86 qcgds                   -1     1 ? output of capital goods sector = qo("cgds",r)
+    1
+   87 ksvces                  -1     1 ? capital services = qo("capital",r)
+    1
+   88 EXPAND                  -1     2 ? change in investment levels relative to endowment stock
+   12    1
+   89 rorg                     1     0 ? global net rate of return on capital stock
+   90 cgdslack                -1     1 ? slack variable for qcgds(r)
+    1
+   91 psaveslack              -1     1 ? slack variable for the savings price equation
+    1
+   92 tx                      -1     2 ? dest.-gen. change in subsidy on exports of i from r
+    2    1
+   93 txs                     -1     3 ? dest.-spec. change in subsidy on exports of i from r to s
+    2    1    1
+   94 tm                      -1     2 ? source-gen. change in tax on imports of i into s
+    2    1
+   95 tms                     -1     3 ? source-spec. change in tax on imports of i from r into s
+    2    1    1
+   96 pr                      -1     2 ? ratio of domestic to imported prices in r
+    2    1
+   97 qtmfsd                  -1     4 ? international usage margin m on i from r to s
+    3    2    1    1
+   98 atmfsd                  -1     4 ? tech change in ms shipping of i from region r to s
+    3    2    1    1
+   99 atm                     -1     1 ? tech change in mode m, worldwide
+    2
+  100 atf                     -1     1 ? tech change shipping of i, worldwide
+    2
+  101 ats                     -1     1 ? tech change shipping from region r
+    1
+  102 atd                     -1     1 ? tech change shipping to s
+    1
+  103 ptrans                  -1     3 ? cost index for international transport of i from r to s
+    2    1    1
+  104 qtm                     -1     1 ? global margin usage
+    3
+  105 pt                      -1     1 ? price of composite margins services, type
+    3
+  106 uelas                   -1     1 ? elasticity of cost of utility wrt utility
+    1
+  107 dppriv                  -1     1 ? private consumption distribution parameter
+    1
+  108 dpgov                   -1     1 ? government consumption distribution parameter
+    1
+  109 dpsave                  -1     1 ? saving distribution parameter
+    1
+  110 fincome                 -1     1 ? factor income at market prices net of depreciation
+    1
+  111 del_indtaxr             -1     1 ? change in ratio of indirect taxes to INCOME in r
+    1
+  112 del_ttaxr               -1     1 ? change in ratio of taxes to INCOME in r
+    1
+  113 incomeslack             -1     1 ? slack variable in the expression for regional income
+    1
+  114 dpav                    -1     1 ? average distribution parameter shift, for EV calc.
+    1
+  115 p                       -1     1 ? price index for disposition of income by regional household
+    1
+  116 au                      -1     1 ? input-neutral shift in utility function
+    1
+  117 dpsum                   -1     1 ? sum of the distribution parameters
+    1
+  118 u                       -1     1 ? per capita utility from aggregate hhld expend. in region r
+    1
+  119 qds                     -1     2 ? domestic sales of commodity i in r
+    2    1
+  120 tradslack               -1     2 ? slack variable in tradeables market clearing condition
+    2    1
+  121 walras_sup               1     0 ? supply in omitted market--global supply of cgds composite
+  122 walras_dem               1     0 ? demand in the omitted market--global demand for savings
+  123 walraslack               1     0 ? slack variable in the omitted market
+  124 vxwfob                  -1     2 ? value of merchandise regional exports, by commodity, FOB
+    2    1
+  125 viwcif                  -1     2 ? value of merchandise regional imports, by commodity, CIF
+    2    1
+  126 vxwreg                  -1     1 ? value of merchandise exports, by region
+    1
+  127 viwreg                  -1     1 ? value of merchandise imports, by region, at world prices
+    1
+  128 pfactreal               -1     2 ? ratio of return to primary factor i to CPI in r
+    6    1
+  129 pfactor                 -1     1 ? market price index of primary factors, by region
+    1
+  130 pfactwld                 1     0 ? world price index of primary factors
+  131 psw                     -1     1 ? index of prices received for tradeables produced in r
+    1
+  132 pdw                     -1     1 ? index of prices paid for tradeables used in region r
+    1
+  133 tot                     -1     1 ? terms of trade for region r: tot(r) = psw(r) - pdw(r)
+    1
+  134 vgdp                    -1     1 ? change in value of GDP
+    1
+  135 pgdp                    -1     1 ? GDP price index
+    1
+  136 qgdp                    -1     1 ? GDP quantity index
+    1
+  137 compvalad               -1     2 ? composition of value added for good i and region r
+    7    1
+  138 pxw                     -1     2 ? aggregate exports price index of i from region r
+    2    1
+  139 vxwcom                  -1     1 ? value of global merchandise exports by commodity
+    2
+  140 vxwwld                   1     0 ? value of world trade
+  141 viwcom                  -1     1 ? value of global merchandise imports i, at world prices
+    2
+  142 valuew                  -1     1 ? value of world supply of good i
+    2
+  143 valuewu                 -1     1 ? value of world supply of good i at user prices
+    2
+  144 pxwreg                  -1     1 ? price index of merchandise exports, by region
+    1
+  145 pxwcom                  -1     1 ? price index of global merchandise exports by commodity
+    2
+  146 pxwwld                   1     0 ? price index of world trade
+  147 piw                     -1     2 ? world price of composite import i in region r
+    2    1
+  148 piwreg                  -1     1 ? price index of merchandise imports, by region
+    1
+  149 piwcom                  -1     1 ? price index of global merchandise imports by commodity
+    2
+  150 pw                      -1     1 ? world price index for total good i supplies
+    2
+  151 pwu                     -1     1 ? world price index for total good i supplies at user prices
+    2
+  152 qxw                     -1     2 ? aggregate exports of i from region r, FOB weights
+    2    1
+  153 qxwreg                  -1     1 ? volume of merchandise exports, by region
+    1
+  154 qxwcom                  -1     1 ? volume of global merchandise exports by commodity
+    2
+  155 qxwwld                   1     0 ? volume of world trade
+  156 qiw                     -1     2 ? aggregate imports of i into region s, CIF weights
+    2    1
+  157 qiwreg                  -1     1 ? volume of merchandise imports, by region
+    1
+  158 qiwcom                  -1     1 ? volume of global merchandise imports by commodity
+    2
+  159 qow                     -1     1 ? quantity index for world supply of good i
+    2
+  160 qowu                    -1     1 ? quantity index for world supply of good i at user prices
+    2
+  161 DTBALi                  -1     2 ? change in trade balance by i and by r, $ US million
+    2    1
+  162 DTBAL                   -1     1 ? change in trade balance X - M, $ US million
+    1
+  163 DTBALR                  -1     1 ? change in ratio of trade balance to regional income
+    1
+  164 uelasev                 -1     1 ? elasticity of cost of utility wrt utility, for EV calc.
+    1
+  165 ueprivev                -1     1 ? utility elasticity of private consn expenditure, for EV calc.
+    1
+  166 ugev                    -1     1 ? per capita utility from govt expend., for EV calc.
+    1
+  167 upev                    -1     1 ? per capita utility from private expend., for EV calc.
+    1
+  168 qsaveev                 -1     1 ? total quantity of savings demanded, for EV calc.
+    1
+  169 yev                     -1     1 ? regional household income in region r, for EV calc.
+    1
+  170 ypev                    -1     1 ? private consumption expenditure in region r, for EV calc.
+    1
+  171 ygev                    -1     1 ? government consumption expenditure in region r, for EV calc.
+    1
+  172 qpev                    -1     2 ? private hhld demand for commodity i in region r, for EV calc.
+    2    1
+  173 ysaveev                 -1     1 ? NET savings expenditure, for EV calc.
+    1
+  174 dpavev                  -1     1 ? average distribution parameter shift, for EV calc.
+    1
+  175 EV                      -1     1 ? equivalent variation, $ US million
+    1
+  176 WEV                      1     0 ? equivalent variation for the world
+  177 EV_ALT                  -1     1 ? regional EV computed in alternative way
+    1
+  178 WEV_ALT                  1     0 ? expression for WEV computed in alternative way
+  179 CNTdpar                 -1     1 ? contribution to EV of change in distribution parameters
+    1
+  180 CNTpopr                 -1     1 ? contribution to EV in region r of change in population
+    1
+  181 CNTqor                  -1     1 ? contribution to EV in region r of output changes
+    1
+  182 CNTqoir                 -1     2 ? contribution to EV of changes in output of NSAV_COMM i in reg. r
+    9    1
+  183 CNTqfer                 -1     1 ? cont. to EV of changes in use of all ENDW_COMM in all ind. in reg. r
+    1
+  184 CNTqfeir                -1     2 ? contribution to EV of changes in use of ENDW_COMM i in all ind. in r
+    6    1
+  185 CNTqfeijr               -1     3 ? cont. to EV of changes in use of ENDW_COMM i in ind. j of reg. r
+    6    7    1
+  186 CNTqfmr                 -1     1 ? cont. to EV of changes in use of imported int. in all ind. in reg. r
+    1
+  187 CNTqfmir                -1     2 ? cont. to EV of changes in use of imported int. i in all ind. in r
+    2    1
+  188 CNTqfmijr               -1     3 ? cont. to EV of changes in use of imported int. i in ind. j of reg. r
+    2    7    1
+  189 CNTqfdr                 -1     1 ? cont. to EV of changes in use of domestic int. in all ind. in reg. r
+    1
+  190 CNTqfdir                -1     2 ? contribution to EV of changes in use of domestic i in all ind. in r
+    2    1
+  191 CNTqfdijr               -1     3 ? cont. to EV of changes in use of domestic int. i in ind. j of reg. r
+    2    7    1
+  192 CNTqpmr                 -1     1 ? contribution to EV of changes in consumption of imported goods in r
+    1
+  193 CNTqpmir                -1     2 ? cont. to EV of changes in consumption of imported good i in reg. r
+    2    1
+  194 CNTqpdr                 -1     1 ? contribution to EV of changes in consumption of domestic goods in r
+    1
+  195 CNTqpdir                -1     2 ? cont. to EV of changes in consumption of domestic good i in reg. r
+    2    1
+  196 CNTqgmr                 -1     1 ? cont. to EV of changes in govt consumption of imports in reg. r
+    1
+  197 CNTqgmir                -1     2 ? cont. to EV of changes in govt consumption of import i in reg. r
+    2    1
+  198 CNTqgdr                 -1     1 ? cont. to EV of changes in govt consumption of domestics in reg. r
+    1
+  199 CNTqgdir                -1     2 ? cont. to EV of changes in govt consumption of domestic i in reg. r
+    2    1
+  200 CNTqxsr                 -1     1 ? cont. to EV of changes in exports of all goods from SRCE r to all DEST
+    1
+  201 CNTqxsirs               -1     3 ? cont. to EV of changes in exports of i from SRCE r to DEST s
+    2    1    1
+  202 CNTqimr                 -1     1 ? cont. to EV of changes in imports of all goods from all SRCE to DEST r
+    1
+  203 CNTqimisr               -1     3 ? cont. to EV of changes in imports of i from SRCE s to DEST r
+    2    1    1
+  204 CNTalleffr              -1     1 ? total contribution to regional EV of allocative effects
+    1
+  205 CNTalleffir             -1     2 ? total contribution to regional EV of allocative effects
+    8    1
+  206 CNTtotr                 -1     1 ? contribution to regional EV of changes in its terms of trade
+    1
+  207 CNTcgdsr                -1     1 ? contribution to regional EV of changes in the price of cgds
+    1
+  208 CNTendwr                -1     1 ? contribution to regional EV of changes in all ENDW_COMM
+    1
+  209 CNTendwir               -1     2 ? contribution to regional EV of changes in ENDW_COMM i
+    6    1
+  210 CNTtechr                -1     1 ? contribution to regional EV of all technical change
+    1
+  211 CNTtech_aor             -1     1 ? contribution to regional EV of output augmenting technical change
+    1
+  212 CNTtech_aoir            -1     2 ? cont. to regional EV of output augmenting tech change in TRAD_COMM i
+    7    1
+  213 CNTtech_afer            -1     1 ? contribution to regional EV of primary factor augmenting tech change
+    1
+  214 CNTtech_afeijr          -1     3 ? cont. to EV of primary factor i augmenting tech change in sector j
+    6    7    1
+  215 CNTtech_avar            -1     1 ? contribution to regional EV of value added augmenting tech change
+    1
+  216 CNTtech_avajr           -1     2 ? cont. to EV of value added augmenting tech change in sector j
+    7    1
+  217 CNTtech_afr             -1     1 ? cont. to regional EV of comp. int. input augmenting tech change
+    1
+  218 CNTtech_afijr           -1     3 ? cont. to EV of composite i input augmenting tech change in sector j
+    2    7    1
+  219 CNTtech_atrr            -1     1 ? contribution to regional EV of technical change in transportation
+    1
+  220 CNTtech_afmfdsd         -1     4 ? cont. to EV of tech change in transportation efficiency
+    3    2    1    1
+  221 CNTtech_amsr            -1     1 ? cont. to EV of bilateral import-augmenting tech change
+    1
+  222 CNTtech_amsirs          -1     3 ? cont. to EV of bilateral import augmenting tech change for TRAD_COMM i
+    2    1    1
+  223 CNTkbr                  -1     1 ? cont. to EV of changes to beg. period capital stock and depreciation
+    1
+  224 px_ir                   -1     2 ? export price index for good i and region r
+    2    1
+  225 pm_ir                   -1     2 ? imports price index for good i and region r
+    2    1
+  226 px_i                    -1     1 ? world export price index for commodity i
+    2
+  227 px_                      1     0 ? world export price index for all commodities
+  228 c1_ir                   -1     2 ? contribution of world price, px_i, to ToT
+    2    1
+  229 c2_ir                   -1     2 ? contribution of regional export price, px_ir, to ToT
+    2    1
+  230 c3_ir                   -1     2 ? contribution of regional import price, pm_ir, to ToT
+    2    1
+  231 c1_r                    -1     1 ? contribution of world prices for all goods to ToT
+    1
+  232 c2_r                    -1     1 ? contribution of regional export prices to ToT
+    1
+  233 c3_r                    -1     1 ? contribution of regional import prices to ToT
+    1
+  234 tot2                    -1     1 ? trade terms for region r, computed from components
+    1
+#VCSTAT
+ccbccbbcbcbbcccbbcbbcccbcbbccccccccccccc
+cccccccccccbccccccbbbbbcbbcccccccccccccc
+ccccccccccccccccbbccccbccccccccccccccccc
+ccccccccccccccccbccccccccccccccccccccccc
+ccccccccccccccccccccbbbbbbbbbbbbbbbbbbbb
+bcbbcbcccccbcbcbcbcbcbcccccccccccc
+#VCTP
+pppppppppppppppppppppppppppppppppppppppp
+pppccccccccppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppccpppppppp
+pppppppppppppppppppppppppppppppppppppppp
+cccpppppppppppcccccccccccccccccccccccccc
+cccccccccccccccccccccccppppppppppp
+#SUBSETS
+    26
+     1     3     2
+     2     4     2
+     3     2     7
+     4     5     7
+     5     3     7
+     6     4     7
+     7     6     8
+     8     2     8
+     9     3     8
+    10     4     8
+    11     8     9
+    12     5     9
+    13     2     9
+    14     3     9
+    15     4     9
+    16     6     9
+    17     7     9
+    18    10     6
+    19    10     8
+    20    10     9
+    21    11     6
+    22    11     8
+    23    11     9
+    24    12     6
+    25    12     8
+    26    12     9
+#COEFFICIENTS
+  336
+    1 VERNUM          0 r y y  version of GTAP data
+    2 SIZE_TRAD       0 r n n  size of TRAD_COMM set
+    3 SIZE_ENDW       0 r n n  size of ENDW_COMM set
+    4 SIZE_DEMD       0 r n n  size of DEMD_COMM set
+    5 SIZE_CGDS       0 r n n  size of CGDS_COMM set
+    6 SIZE_PROD       0 r n n  size of PROD_COMM set
+    7 SLUG            1 i y r  sluggish primary factor endowments
+    6 c
+    8 SAVE            1 r y y  expenditure on NET savings in region r valued at agents prices
+    1
+    9 VDGA            2 r y y  government consumption expenditure on domestic i in r
+    2    1
+   10 VDGM            2 r y y  government consumption expenditure on domestic i in r
+    2    1
+   11 VIGA            2 r y y  government consumption expenditure on imported i
+    2    1
+   12 VIGM            2 r y y  govt consumption expenditure on i in r
+    2    1
+   13 VDPA            2 r y y  private consumption expenditure on domestic i in r
+    2    1
+   14 VDPM            2 r y y  private consumption expenditure on domestic i in r
+    2    1
+   15 VIPA            2 r y y  private consumption expenditure on imported i in r
+    2    1
+   16 VIPM            2 r y y  private consumption expenditure on i in r
+    2    1
+   17 EVOA            2 r y y  value of commodity i output in region r
+    6    1
+   18 EVFA            3 r y y  producer expenditure on i by j in r at agents prices
+    6    7    1
+   19 VDFA            3 r y y  purchases of domestic i for use by j in region r
+    2    7    1
+   20 VIFA            3 r y y  purchases of imported i for use by j in region r
+    2    7    1
+   21 VFM             3 r y y  producer expenditure on i by j in r valued at mkt prices
+    6    7    1
+   22 VIFM            3 r y y  purchases of imports i for use by j in region r
+    2    7    1
+   23 VDFM            3 r y y  purchases of domestic i for use by j in region r
+    2    7    1
+   24 VDEP            1 r y y  value of capital depeciation in r (exogenous)
+    1
+   25 VIMS            3 r y y  imports of i from r to s valued at domestic mkt prices
+    2    1    1
+   26 VIWS            3 r y y  imports of i from r to s valued CIF (tradeables only)
+    2    1    1
+   27 VXWD            3 r y y  exports of i from r to s valued FOB (tradeables only)
+    2    1    1
+   28 VXMD            3 r y y  exports of i from r to s valued at mkt prices (tradeables only)
+    2    1    1
+   29 VST             2 r y y  exprts of m from r for intl trnsport valued at mkt p (tradeables only)
+    3    1
+   30 VFA             3 r n n  producer expenditure on i by j in r valued at agents prices
+    8    7    1
+   31 VOA             2 r n n  value of commodity i output in region r at agents prices
+    9    1
+   32 VDM             2 r n n  domestic sales of i in r at mkt prices (tradeables only)
+    2    1
+   33 VOM             2 r n n  value of commodity i output in region r at market prices
+    9    1
+   34 VGA             2 r n n  government consn expenditure on i in r at agents prices
+    2    1
+   35 GOVEXP          1 r n n  government expenditure in region r
+    1
+   36 VPA             2 r n n  private hhld expenditure on i in r valued at agents prices
+    2    1
+   37 PRIVEXP         1 r n n  private consumption expenditure in region r
+    1
+   38 INCOME          1 r n n  level of expenditure, which equals NET income in region r
+    1
+   39 DGTAX           2 r n n  tax on government consumption of domestic good i in region r
+    2    1
+   40 IGTAX           2 r n n  tax on government consumption of imported good i in region r
+    2    1
+   41 TGC             1 r n n  government consumption tax payments in r
+    1
+   42 DPTAX           2 r n n  tax on private consumption of domestic good i in region r
+    2    1
+   43 IPTAX           2 r n n  tax on private consumption of imported good i in region r
+    2    1
+   44 TPC             1 r n n  private consumption tax payments in r
+    1
+   45 DFTAX           3 r n n  tax on use of domestic intermediate good i by j in r
+    2    7    1
+   46 IFTAX           3 r n n  tax on use of imported intermediate good i by j in r
+    2    7    1
+   47 TIU             1 r n n  firms tax payments on intermediate goods usage in r
+    1
+   48 ETAX            3 r n n  tax on use of endowment good i by industry j in region r
+    6    7    1
+   49 TFU             1 r n n  firms tax payments on primary factor usage in r
+    1
+   50 PTAX            2 r n n  output tax on good i in region r
+    9    1
+   51 TOUT            1 r n n  production tax payments in r
+    1
+   52 XTAXD           3 r n n  tax on exports of good i from source r to destination s
+    2    1    1
+   53 TEX             1 r n n  export tax payments in r
+    1
+   54 MTAX            3 r n n  tax on imports of good i from source r in destination s
+    2    1    1
+   55 TIM             1 r n n  import tax payments in r
+    1
+   56 ESUBD           1 r y r  region-generic el. of sub. domestic/imported for all agents
+    2
+   57 REGINV          1 r n n  regional GROSS investment in r (value of "cgds" output)
+    1
+   58 NETINV          1 r n n  regional NET investment in region r
+    1
+   59 GLOBINV         0 r n n  global expenditures on net investment
+   60 CONSHR          2 r n n  share of private hhld consumption devoted to good i in r
+    2    1
+   61 INCPAR          2 r y r  expansion parameter in the CDE minimum expenditure function
+    2    1
+   62 UELASPRIV       1 r n n  elasticity of cost wrt utility from private consumption
+    1
+   63 GMSHR           2 r n n  share of imports for govt hhld at agents prices
+    2    1
+   64 XWCONSHR        2 r n n  expansion-parameter-weighted consumption share
+    2    1
+   65 SUBPAR          2 r y r  substitution parameter in CDE minimum expenditure function
+    2    1
+   66 ALPHA           2 r n n  1 - sub. parameter in the CDE minimum expenditure function
+    2    1
+   67 APE             3 r n n  Allen partial elst. of sub. between composite i and k in r
+    2    2    1
+   68 EY              2 r n n  income elast. of private hhld demand for i in r (HT F4)
+    2    1
+   69 EP              3 r n n  uncomp. elast. of private hhld demand for i wrt price of k in r (HT F5)
+    2    2    1
+   70 LevTPD          2 r n n  levels TPD
+    2    1
+   71 PMSHR           2 r n n  share of imports for priv hhld at agents prices
+    2    1
+   72 ESUBT           1 r y r  elst. of sub. among composite intermediate inputs in production
+    7
+   73 FMSHR           3 r n n  share of firms imports in dom. composite, agents prices
+    2    7    1
+   74 VVA             2 r n n  value added in activity j in region r
+    7    1
+   75 SVADEFAULT      1 r n n zerodivide default for SVA
+    6
+   76 SVA             3 r n n  share of i in total value added in j in r
+    6    7    1
+   77 ESUBVA          1 r y r  elst. of sub. capital/labor/land, in production of value added in j
+    7
+   78 STC             3 r n n  share of i in total costs of j in r
+    8    7    1
+   79 VKB             1 r y y  value of beginning-of-period capital stock in region r
+    1
+   80 INVKERATIO      1 r n n  ratio of gross investment to end-of-period capital stock in r
+    1
+   81 GRNETRATIO      1 r n n  ratio of GROSS/NET rates of return on capital in r
+    1
+   82 RORFLEX         1 r y r  flexibility of expected net ROR on capital stock in r wrt investment
+    1
+   83 RORDELTA        0 i y r  binary coefficient to switch mechanism of allocating investment funds
+   84 MSHRS           3 r n n  share of imports from r in import bill of s at mkt prices
+    2    1    1
+   85 ESUBM           1 r y r  region-generic el. of sub. among imports of i in Armington structure
+    2
+   86 VTMFSD          4 r y y  intl margin usage, by margin, freight, source, and destination
+    3    2    1    1
+   87 VTFSD           3 r n n  aggregate value of svces in the shipment of i from r to s
+    2    1    1
+   88 VTMUSE          1 r n n  international margin services usage, by type
+    3
+   89 VTMPROV         1 r n n  international margin services provision
+    3
+   90 VTRPROV         1 r n n  international margin supply, by region
+    1
+   91 VT              0 r n n  international margin supply
+   92 VTMUSESHR       4 r n n  share of i,r,s usage in global demand for m
+    3    2    1    1
+   93 VTSUPPSHR       2 r n n  share of region r in global supply of margin m
+    3    1
+   94 VTUSE           0 r n n  international margin services usage
+   95 VTFSD_MSH       4 r n n  share of margin m in cost of getting i from r to s
+    3    2    1    1
+   96 VIWSCOST        3 r n n  value of imports calculated as total cost of imports
+    2    1    1
+   97 FOBSHR          3 r n n  FOB share in VIW
+    2    1    1
+   98 TRNSHR          3 r n n  transport share in VIW
+    2    1    1
+   99 XSHRPRIV        1 r n n  private expenditure share in regional income
+    1
+  100 XSHRGOV         1 r n n  government expenditure share in regional income
+    1
+  101 XSHRSAVE        1 r n n  saving share in regional income
+    1
+  102 TINC            1 r n n  income tax payments in r
+    1
+  103 REVSHR          3 r n n
+    6    7    1
+  104 ETRAE           1 r y r  elst. of transformation for sluggish primary factor endowments
+    6
+  105 FY              1 r n n  primary factor income in r net of depreciation
+    1
+  106 INDTAX          1 r n n  indirect tax receipts in r
+    1
+  107 DPARSUM         1 r y y  sum of distribution parameters
+    1
+  108 UTILELAS        1 r n n  elasticity of cost of utility wrt utility
+    1
+  109 DPARPRIV        1 r n n  private consumption distribution parameter
+    1
+  110 DPARGOV         1 r n n  government consumption distribution parameter
+    1
+  111 DPARSAVE        1 r n n  saving distribution parameter
+    1
+  112 UTILPRIV        1 r n y  utility from private consumption
+    1
+  113 UTILGOV         1 r n y  utility from government consumption
+    1
+  114 UTILSAVE        1 r n y  utility from saving
+    1
+  115 SHRDFM          3 r n n  share of dom. prod. i used by sector j in r at mkt prices
+    2    7    1
+  116 SHRDPM          2 r n n  share of domestic prod. of i used by private hhlds in r
+    2    1
+  117 SHRDGM          2 r n n  share of imports of i used by govt hhlds in r
+    2    1
+  118 SHRDM           2 r n n  share of domestic sales of i in r
+    2    1
+  119 SHRST           2 r n n  share of sales of m to global transport services in r
+    3    1
+  120 SHRXMD          3 r n n  share of export sales of i to s in r
+    2    1    1
+  121 VIM             2 r n n  value of imports of commodity i in r at domestic market prices
+    2    1
+  122 SHRIFM          3 r n n  share of import i used by sector j in r
+    2    7    1
+  123 SHRIPM          2 r n n  share of import i used by private hhlds in r
+    2    1
+  124 SHRIGM          2 r n n  the share of import i used by govt hhlds in r
+    2    1
+  125 SHREM           3 r n n  share of mobile endowment i used by sector j at mkt prices
+   11    7    1
+  126 VXW             2 r n n  value of exports by comm. i and region r at FOB prices
+    2    1
+  127 VXWREGION       1 r n n  value of exports by region r at FOB prices
+    1
+  128 VIW             2 r n n  value of commodity imports i into s at CIF prices
+    2    1
+  129 VIWREGION       1 r n n  value of commodity imports by region r at CIF prices
+    1
+  130 VENDWREG        1 r n n  value of primary factors, at mkt prices, by region
+    1
+  131 VENDWWLD        0 r n n  value of primary factors, at mkt prices, worldwide
+  132 GDP             1 r n n  Gross Domestic Product in region r
+    1
+  133 VXWCOMMOD       1 r n n  value of world exports by commodity i at FOB prices
+    2
+  134 VXWLD           0 r n n  value of commodity exports, FOB, globally
+  135 VIWCOMMOD       1 r n n  global value of commodity imports, CIF, by commodity
+    2
+  136 PW_PM           2 r n n  ratio of world to domestic prices
+    2    1
+  137 VOW             2 r n n  value of output in r at FOB including transportation services
+    2    1
+  138 VWOW            1 r n n  value of world supply at world prices for i
+    2
+  139 VWOU            1 r n n  value of world output of i at user prices
+    2
+  140 TBAL            1 r n n  trade balance for region r
+    1
+  141 INCOMEEV        1 r n y  regional income, for EV calc.
+    1
+  142 UTILPRIVEV      1 r n y  utility from private consumption, for EV calcs
+    1
+  143 UTILGOVEV       1 r n y  utility from private consumption, for EV calcs
+    1
+  144 UTILSAVEEV      1 r n y  utility from private consumption, for EV calcs
+    1
+  145 VPAEV           2 r n y  private hhld expend. on i in r valued at agents prices, for EV calc.
+    2    1
+  146 VPAREGEV        1 r n n  private consumption expenditure in region r, for EV calc.
+    1
+  147 CONSHREV        2 r n n  share of private hhld consn devoted to good i in r, for EV calc.
+    2    1
+  148 EYEV            2 r n n  expend. elast. of private hhld demand for i in r, for EV calc.
+    2    1
+  149 UELASPRIVEV     1 r n n  elast. of cost wrt utility from private consn, for EV calc.
+    1
+  150 XWCONSHREV      2 r n n  expansion-parameter-weighted consumption share, for EV calc.
+    2    1
+  151 PRIVEXPEV       1 r n y  private consumption expenditure in region r, for EV calc.
+    1
+  152 GOVEXPEV        1 r n y  government consumption expenditure in region r, for EV calc.
+    1
+  153 SAVEEV          1 r n y  saving in region r, for EV calc.
+    1
+  154 XSHRPRIVEV      1 r n n  private expenditure share in regional income, for EV calc.
+    1
+  155 XSHRGOVEV       1 r n n  government expenditure share in regional income, for EV calc.
+    1
+  156 XSHRSAVEEV      1 r n n  saving share in regional income, for EV calc.
+    1
+  157 UTILELASEV      1 r n y  elasticity of cost of utility wrt utility, for EV calc.
+    1
+  158 EVSCALFACT      1 r n n  equivalent variation scaling factor
+    1
+  159 VTMD            2 r n n  aggregate value of svce m in shipments to s
+    3    1
+  160 SX_IR           2 r n n  share of good i in total exports from r
+    2    1
+  161 VTICOMM         2 r n n  margin usage of m in getting imports to region s
+    3    1
+  162 VIWDIRALL       2 r n n  imports of i into s, with direct allocation of margins
+    2    1
+  163 VIWDATOT        1 r n n  total imports into s, calculated on direct allocation basis
+    1
+  164 SM_IR           2 r n n  share of good i in total imports into r
+    2    1
+  165 SX_IRS          3 r n n  share of exports of good i from region r to s
+    2    1    1
+  166 SXT_IR          2 r n n  share of margins in exports of good i from region r
+    3    1
+  167 SM_IRS          3 r n n  share of imports of good i into s from r at FOB prices
+    2    1    1
+  168 SMT_IR          2 r n n  share of transport cost in imports of margin commodity
+    3    1
+  169 SW_IR           2 r n n  share of region r exports in world total for good i
+    2    1
+  170 SW_I            1 r n n  share of exports of i in world total
+    2
+  171 C00171          1 r n n Introduced during condensation
+    1
+  172 C00172          1 r n n Introduced during condensation
+    1
+  173 C00173          1 r n n Introduced during condensation
+    1
+  174 C00174          2 r n n Introduced during condensation
+    2    1
+  175 C00175          2 r n n Introduced during condensation
+    7    1
+  176 C00176          2 r n n Introduced during condensation
+    7    1
+  177 C00177          2 r n n Introduced during condensation
+    2    1
+  178 C00178          2 r n n Introduced during condensation
+    7    1
+  179 C00179          1 r n n Introduced during condensation
+    1
+  180 C00180          2 r n n Introduced during condensation
+    2    1
+  181 C00181          2 r n n Introduced during condensation
+    7    1
+  182 C00182          1 r n n Introduced during condensation
+    1
+  183 C00183          2 r n n Introduced during condensation
+    2    1
+  184 C00184          2 r n n Introduced during condensation
+   11    1
+  185 C00185          2 r n n Introduced during condensation
+    7    1
+  186 C00186          2 r n n Introduced during condensation
+    7    1
+  187 C00187          3 r n n Introduced during condensation
+    6    7    1
+  188 C00188          2 r n n Introduced during condensation
+    7    1
+  189 C00189          3 r n n Introduced during condensation
+    6    7    1
+  190 C00190          2 r n n Introduced during condensation
+    7    1
+  191 C00191          2 r n n Introduced during condensation
+    7    1
+  192 C00192          3 r n n Introduced during condensation
+    6    7    1
+  193 C00193          2 r n n Introduced during condensation
+    7    1
+  194 C00194          2 r n n Introduced during condensation
+    7    1
+  195 C00195          3 r n n Introduced during condensation
+    6    7    1
+  196 C00196          2 r n n Introduced during condensation
+    7    1
+  197 C00197          2 r n n Introduced during condensation
+    7    1
+  198 C00198          3 r n n Introduced during condensation
+    6    7    1
+  199 C00199          1 r n n Introduced during condensation
+    1
+  200 C00200          2 r n n Introduced during condensation
+    7    1
+  201 C00201          3 r n n Introduced during condensation
+    6    7    1
+  202 C00202          2 r n n Introduced during condensation
+    6    1
+  203 C00203          2 r n n Introduced during condensation
+    7    1
+  204 C00204          3 r n n Introduced during condensation
+    6    7    1
+  205 C00205          2 r n n Introduced during condensation
+    6    1
+  206 C00206          1 r n n Introduced during condensation
+    2
+  207 C00207          2 r n n Introduced during condensation
+    2    7
+  208 C00208          2 r n n Introduced during condensation
+    2    1
+  209 C00209          1 r n n Introduced during condensation
+    2
+  210 C00210          2 r n n Introduced during condensation
+    2    7
+  211 C00211          2 r n n Introduced during condensation
+    2    1
+  212 C00212          2 r n n Introduced during condensation
+    2    1
+  213 C00213          2 r n n Introduced during condensation
+    2    1
+  214 C00214          2 r n n Introduced during condensation
+    2    1
+  215 C00215          2 r n n Introduced during condensation
+    2    1
+  216 C00216          2 r n n Introduced during condensation
+    2    1
+  217 C00217          2 r n n Introduced during condensation
+    2    1
+  218 C00218          2 r n n Introduced during condensation
+    3    1
+  219 C00219          2 r n n Introduced during condensation
+    3    1
+  220 C00220          2 r n n Introduced during condensation
+    4    1
+  221 C00221          2 r n n Introduced during condensation
+    4    1
+  222 C00222          2 r n n Introduced during condensation
+    2    1
+  223 C00223          2 r n n Introduced during condensation
+    2    1
+  224 C00224          2 r n n Introduced during condensation
+    2    1
+  225 C00225          2 r n n Introduced during condensation
+    2    1
+  226 C00226          1 r n n Introduced during condensation
+    1
+  227 C00227          2 r n n Introduced during condensation
+    3    1
+  228 C00228          2 r n n Introduced during condensation
+    3    1
+  229 C00229          2 r n n Introduced during condensation
+    4    1
+  230 C00230          2 r n n Introduced during condensation
+    4    1
+  231 C00231          2 r n n Introduced during condensation
+    2    1
+  232 C00232          1 r n n Introduced during condensation
+    1
+  233 C00233          2 r n n Introduced during condensation
+   11    1
+  234 C00234          1 r n n Introduced during condensation
+    1
+  235 C00235          1 r n n Introduced during condensation
+    1
+  236 C00236          2 r n n Introduced during condensation
+    6    1
+  237 C00237          1 r n n Introduced during condensation
+    1
+  238 C00238          1 r n n Introduced during condensation
+    1
+  239 C00239          2 r n n Introduced during condensation
+    2    1
+  240 C00240          2 r n n Introduced during condensation
+    2    1
+  241 C00241          2 r n n Introduced during condensation
+    2    1
+  242 C00242          2 r n n Introduced during condensation
+    6    1
+  243 C00243          2 r n n Introduced during condensation
+   11    1
+  244 C00244          2 r n n Introduced during condensation
+   10    1
+  245 C00245          2 r n n Introduced during condensation
+    7    1
+  246 C00246          1 r n n Introduced during condensation
+    1
+  247 C00247          2 r n n Introduced during condensation
+    7    1
+  248 C00248          3 r n n Introduced during condensation
+    6   11    1
+  249 C00249          2 r n n Introduced during condensation
+   11    1
+  250 C00250          3 r n n Introduced during condensation
+   11    7    1
+  251 C00251          2 r n n Introduced during condensation
+   11    1
+  252 C00252          2 r n n Introduced during condensation
+    7    1
+  253 C00253          2 r n n Introduced during condensation
+    6    1
+  254 C00254          2 r n n Introduced during condensation
+    7    1
+  255 C00255          1 r n n Introduced during condensation
+    1
+  256 C00256          2 r n n Introduced during condensation
+    6    1
+  257 C00257          2 r n n Introduced during condensation
+    7    1
+  258 C00258          1 r n n Introduced during condensation
+    1
+  259 C00259          3 r n n Introduced during condensation
+    6    6    1
+  260 C00260          2 r n n Introduced during condensation
+    6    1
+  261 C00261          3 r n n Introduced during condensation
+    6    7    1
+  262 C00262          2 r n n Introduced during condensation
+    6    1
+  263 C00263          2 r n n Introduced during condensation
+    6    1
+  264 C00264          2 r n n Introduced during condensation
+    7    1
+  265 C00265          1 r n n Introduced during condensation
+    1
+  266 C00266          2 r n n Introduced during condensation
+    6    1
+  267 C00267          2 r n n Introduced during condensation
+    7    1
+  268 C00268          1 r n n Introduced during condensation
+    1
+  269 C00269          2 r n n Introduced during condensation
+    2    1
+  270 C00270          2 r n n Introduced during condensation
+    2    1
+  271 C00271          2 r n n Introduced during condensation
+    2    1
+  272 C00272          3 r n n Introduced during condensation
+    3    2    1
+  273 C00273          2 r n n Introduced during condensation
+    3    1
+  274 C00274          2 r n n Introduced during condensation
+    3    1
+  275 C00275          2 r n n Introduced during condensation
+    3    1
+  276 C00276          3 r n n Introduced during condensation
+    3    2    1
+  277 C00277          3 r n n Introduced during condensation
+    3    2    1
+  278 C00278          2 r n n Introduced during condensation
+    2    1
+  279 C00279          3 r n n Introduced during condensation
+    2    1    1
+  280 C00280          3 r n n Introduced during condensation
+    2    1    1
+  281 C00281          2 r n n Introduced during condensation
+    3    1
+  282 C00282          2 r n n Introduced during condensation
+    2    1
+  283 C00283          2 r n n Introduced during condensation
+    1    1
+  284 C00284          1 r n n Introduced during condensation
+    1
+  285 C00285          1 r n n Introduced during condensation
+    3
+  286 C00286          2 r n n Introduced during condensation
+    3    2
+  287 C00287          2 r n n Introduced during condensation
+    3    1
+  288 C00288          2 r n n Introduced during condensation
+    3    1
+  289 C00289          2 r n n Introduced during condensation
+    3    1
+  290 C00290          2 r n n Introduced during condensation
+    2    1
+  291 C00291          2 r n n Introduced during condensation
+    1    1
+  292 C00292          1 r n n Introduced during condensation
+    1
+  293 C00293          2 r n n Introduced during condensation
+    3    1
+  294 C00294          2 r n n Introduced during condensation
+    2    1
+  295 C00295          2 r n n Introduced during condensation
+    1    1
+  296 C00296          1 r n n Introduced during condensation
+    1
+  297 C00297          3 r n n Introduced during condensation
+    3    2    1
+  298 C00298          2 r n n Introduced during condensation
+    2    1
+  299 C00299          3 r n n Introduced during condensation
+    2    1    1
+  300 C00300          2 r n n Introduced during condensation
+    3    1
+  301 C00301          2 r n n Introduced during condensation
+    2    1
+  302 C00302          2 r n n Introduced during condensation
+    1    1
+  303 C00303          1 r n n Introduced during condensation
+    1
+  304 C00304          2 r n n Introduced during condensation
+    3    1
+  305 C00305          2 r n n Introduced during condensation
+    2    1
+  306 C00306          2 r n n Introduced during condensation
+    1    1
+  307 C00307          1 r n n Introduced during condensation
+    1
+  308 C00308          2 r n n Introduced during condensation
+    2    1
+  309 C00309          2 r n n Introduced during condensation
+    2    1
+  310 C00310          2 r n n Introduced during condensation
+    7    1
+  311 C00311          2 r n n Introduced during condensation
+    7    1
+  312 C00312          2 r n n Introduced during condensation
+    7    1
+  313 C00313          1 r n n Introduced during condensation
+    1
+  314 C00314          2 r n n Introduced during condensation
+    2    1
+  315 C00315          2 r n n Introduced during condensation
+    2    1
+  316 C00316          2 r n n Introduced during condensation
+    2    1
+  317 C00317          2 r n n Introduced during condensation
+    2    1
+  318 C00318          2 r n n Introduced during condensation
+    2    1
+  319 C00319          2 r n n Introduced during condensation
+    2    1
+  320 C00320          2 r n n Introduced during condensation
+    7    1
+  321 C00321          2 r n n Introduced during condensation
+    7    1
+  322 C00322          2 r n n Introduced during condensation
+    7    1
+  323 C00323          1 r n n Introduced during condensation
+    1
+  324 C00324          2 r n n Introduced during condensation
+    2    1
+  325 C00325          2 r n n Introduced during condensation
+    7    1
+  326 C00326          1 r n n Introduced during condensation
+    1
+  327 C00327          2 r n n Introduced during condensation
+    2    1
+  328 C00328          2 r n n Introduced during condensation
+    2    1
+  329 C00329          2 r n n Introduced during condensation
+    2    1
+  330 C00330          2 r n n Introduced during condensation
+    2    1
+  331 C00331          2 r n n Introduced during condensation
+    2    1
+  332 C00332          2 r n n Introduced during condensation
+    7    1
+  333 C00333          1 r n n Introduced during condensation
+    1
+  334 C00334          2 r n n Introduced during condensation
+    2    1
+  335 C00335          2 r n n Introduced during condensation
+    7    1
+  336 C00336          1 r n n Introduced during condensation
+    1
+#EQUATIONS
+  155
+    1 GPRICEINDEX                -1  1 definition of price index for aggregate govt purchases (HT 40)
+    1
+    2 GOVDMNDS                   -1  2 government consumption demands for composite commodities (HT 41)
+    2    1
+    3 GOVU                       -1  1 utility from government consumption in r
+    1
+    4 GHHLDDOM                   -1  2 government consumption demand for domestic goods (HT 44)
+    2    1
+    5 TGCRATIO                   -1  1 change in ratio of government consumption tax payments to regional income
+    1
+    6 PHHLDINDEX                 -1  1 price index for private consumption expenditure
+    1
+    7 PRIVATEU                   -1  1 computation of utility from private consumption in r (HT 45)
+    1
+    8 UTILELASPRIV               -1  1 elasticity of expenditure wrt utility from private consumption
+    1
+    9 PRIVDMNDS                  -1  2 private consumption demands for composite commodities (HT 46)
+    2    1
+   10 TPDSHIFT                   -1  2 permits uniform consumption tax change
+    2    1
+   11 TPMSHIFT                   -1  2 permits uniform consumption tax change
+    2    1
+   12 TPCRATIO                   -1  1 change in ratio of private consumption tax payments to regional income
+    1
+   13 PCOMPRICE                  -1  2 private consumption price for composite commodities (HT 47)
+    2    1
+   14 PHHLDDOM                   -1  2 private consumption demand for domestic goods (HT 48)
+    2    1
+   15 AVAWORLD                   -1  2 sector/region specific average rate of value added augmenting tech change
+    7    1
+   16 TIURATIO                   -1  1 change in ratio of tax payments on intermediate goods to regional income
+    1
+   17 INDDOM                     -1  3 industry j demands for domestic good i (HT 32)
+    2    7    1
+   18 MPFACTPRICE                -1  3 eqn links domestic and firm demand prices (HT 16)
+   11    7    1
+   19 SPFACTPRICE                -1  3 eqn links domestic and firm demand prices (HT 17)
+   10    7    1
+   20 TFURATIO                   -1  1 change in ratio of tax payments on factor usage to regional income
+    1
+   21 OUTPUTPRICES               -1  2 eqn links pre- and post-tax supply prices for all industries  (HT 15)
+    7    1
+   22 TOUTRATIO                  -1  1 change in ratio of output tax payments to regional income
+    1
+   23 ZEROPROFITS                -1  2 industry zero pure profits condition (HT 6)
+    7    1
+   24 KAPSVCES                   -1  1 eqn defines a variable for capital services (HT 52)
+    1
+   25 KAPRENTAL                  -1  1 eqn defines a variable for capital rental rate (HT 53)
+    1
+   26 CAPGOODS                   -1  1 eqn defines a variable for gross investment (HT 54)
+    1
+   27 PRCGOODS                   -1  1 eqn defines the price of cgds (HT 55)
+    1
+   28 KBEGINNING                 -1  1 associates change in cap. services w/ change in cap. stock (HT 56)
+    1
+   29 KEND                       -1  1 Ending capital stock equals beginning stock plus net investment.  (HT 10)
+    1
+   30 RORCURRENT                 -1  1 current rate of return on capital in region r (HT 57)
+    1
+   31 ROREXPECTED                -1  1 expected rate of return depends on the current return and investment (HT 58)
+    1
+   32 BALDWIN                    -1  2 change in investment levels relative to endowment stock
+   12    1
+   33 RORGLOBAL                  -1  1 either gross investment or expected rate of return in region r (HT 59)
+    1
+   34 GLOBALINV                   1  0 either expected global rate of return or global net investment (HT 11)
+   35 PRICGDS                     1  0 eqn generates a price index for the aggregate global cgds composite (HT 60)
+   36 SAVEPRICE                  -1  1 savings price
+    1
+   37 TEXPRATIO                  -1  1 change in ratio of export tax payments to regional income
+    1
+   38 DPRICEIMP                  -1  2 price for aggregate imports (HT 28)
+    2    1
+   39 PRICETGT                   -1  2 eqn defines target price ratio to be attained via the variable levy (HT 25)
+    2    1
+   40 IMPORTDEMAND               -1  3 regional demand for disaggregated imported commodities by source (HT 29)
+    2    1    1
+   41 TIMPRATIO                  -1  1 change in ratio of import tax payments to regional income
+    1
+   42 TRANS_DEMAND               -1  1 global demand for margin m
+    3
+   43 PTRANSPORT                 -1  1 generate price index for composite transportation services
+    3
+   44 TRANSVCES                  -1  2 generate demand for regional supply of global transportation service (HT 61)
+    3    1
+   45 FACTORINCPRICES            -1  2 eqn links pre- and post-tax endowment supply prices (HT 15)
+    6    1
+   46 TINCRATIO                  -1  1 change in ratio of income tax payments to regional income
+    1
+   47 ENDW_PRICE                 -1  2 eqn generates the composite price for sluggish endowments (HT 50)
+   10    1
+   48 ENDW_SUPPLY                -1  3 eqn distributes the sluggish endowments across sectors (HT 51)
+   10    7    1
+   49 FACTORINCOME               -1  1 factor income at market prices net of depreciation
+    1
+   50 DINDTAXRATIO               -1  1 change in ratio of indirect taxes to INCOME in r
+    1
+   51 DTAXRATIO                  -1  1 change in ratio of taxes to INCOME in r
+    1
+   52 REGIONALINCOME             -1  1 regional income = sum of primary factor income and indirect tax receipts
+    1
+   53 DPARAV                     -1  1 average distribution parameter shift
+    1
+   54 UTILITELASTIC              -1  1 elasticity of cost of utility wrt utility
+    1
+   55 PRIVCONSEXP                -1  1 private consumption expenditure
+    1
+   56 GOVCONSEXP                 -1  1 government consumption expenditure
+    1
+   57 SAVING                     -1  1 saving
+    1
+   58 PRICEINDEXREG              -1  1 price index for disposition of income by regional household
+    1
+   59 UTILITY                    -1  1 regional household utility
+    1
+   60 DISTPARSUM                 -1  1 sum of the distribution parameters
+    1
+   61 MKTCLDOM                   -1  2 eqn assures market clearing for domestic sales (HT 3)
+    2    1
+   62 MKTCLTRD_MARG              -1  2 eqn assures market clearing for margins commodities (HT 1)
+    3    1
+   63 MKTCLTRD_NMRG              -1  2 eqn assures market clearing for the non-margins commodities (HT 1)
+    4    1
+   64 MKTCLIMP                   -1  2 eqn assures mkt clearing for imported goods entering each region (HT 2)
+    2    1
+   65 MKTCLENDWM                 -1  2 eqn assures mkt clearing for perfectly mobile endowments in each r (HT 4)
+   11    1
+   66 MKTCLENDWS                 -1  3 eqn assures mkt clearing for imperfectly mobile endowments in each r (HT 5)
+   10    7    1
+   67 WALRAS_S                    1  0 Extra eqn computes change in supply in the omitted market.
+   68 WALRAS_D                    1  0 Extra eqn computes change in demand in the omitted market.
+   69 WALRAS                      1  0 Check Walras Law.  Value of "walraslack" should be zero. (HT 14)
+   70 REALRETURN                 -1  2 eqn defines the real rate of return to primary factor i in region r
+    6    1
+   71 PRIMFACTPR                 -1  1 computes % change in price index of primary factors, by region
+    1
+   72 PRIMFACTPRWLD               1  0 computes % change in global price index of primary factors
+   73 REGSUPRICE                 -1  1 estimate change in index of prices received for tradeables i produced in r
+    1
+   74 REGDEMPRICE                -1  1 estimate change in index of prices paid for tradeable products used in r
+    1
+   75 TOTeq                      -1  1 terms of trade equation computed as difference in psw and pdw (HT 66)
+    1
+   76 VGDP_r                     -1  1 change in value of GDP (HT 70)
+    1
+   77 PGDP_r                     -1  1 GDP price index (HT 71)
+    1
+   78 QGDP_r                     -1  1 GDP quantity index
+    1
+   79 VREGEX_ir_MARG             -1  2 the change in FOB value of exports of m from r
+    3    1
+   80 VREGEX_ir_NMRG             -1  2 the change in FOB value of exports of commodity i from r (HT 73)
+    4    1
+   81 VREGEX_r                   -1  1 computes % change in value of merchandise exports, by region (HT 75)
+    1
+   82 VWLDEX_i                   -1  1 computes % change in FOB value of global exports, by commodity (HT 77)
+    2
+   83 VWLDEX                      1  0 computes % change in value of global exports (HT 79)
+   84 VREGIM_is                  -1  2 the change in CIF value of imports of commodity i into s (HT 74)
+    2    1
+   85 VREGIM_s                   -1  1 computes % change in value of imports, CIF basis, by region (HT 76)
+    1
+   86 VWLDIM_i                   -1  1 computes % change in value of global imports, by commodity (HT 78)
+    2
+   87 VWLDOUT                    -1  1 change in value of world output of comm. i at FOB prices (HT 80)
+    2
+   88 VWLDOUTUSE                 -1  1 change in value of world output of commodity i at user prices
+    2
+   89 PREGEX_ir_MARG             -1  2 change in FOB price index of exports of m from r
+    3    1
+   90 PREGEX_ir_NMRG             -1  2 change in FOB price index of exports of commodity i from r (HT 81)
+    4    1
+   91 PREGEX_r                   -1  1 computes % change in price index of exports, by region (HT 83)
+    1
+   92 PWLDEX_i                   -1  1 computes % change in price index of exports, by commodity (HT 85)
+    2
+   93 PWLDEX                      1  0 computes % change in price index of global exports (HT 87)
+   94 PREGIM_is                  -1  2 change in CIF price index of imports of commodity i into s (HT 82)
+    2    1
+   95 PREGIM_s                   -1  1 computes % change in price index of imports, by region (HT 84)
+    1
+   96 PWLDIM_i                   -1  1 computes % change in price index of imports, by commodity (HT 86)
+    2
+   97 PWLDOUT                    -1  1 change in index of world prices, FOB, for total production of i (HT 88)
+    2
+   98 PWLDUSE                    -1  1 change in index of user prices for deflating world production of i
+    2
+   99 QREGEX_ir_MARG             -1  2 change in volume of exports of margin commodity m from r
+    3    1
+  100 QREGEX_ir_NMRG             -1  2 change in volume of exports of non-margin commodity i from r
+    4    1
+  101 QREGEX_r                   -1  1 computes % change in quantity index of exports, by region
+    1
+  102 QWLDEX_i                   -1  1 computes % change in quantity index of exports, by commodity
+    2
+  103 QWLDEX                      1  0 computes % change in quantity index of global exports
+  104 QREGIM_is                  -1  2 change in volume of imports of commodity i into s
+    2    1
+  105 QREGIM_s                   -1  1 computes % change in quantity index of imports, by region
+    1
+  106 QWLDIM_i                   -1  1 computes % change in quantity index of imports, by commodity
+    2
+  107 QWLDOUT                    -1  1 change in index of world production of i
+    2
+  108 QWLDOUTU                   -1  1 change in index of world production of i evaluated at user prices
+    2
+  109 TRADEBAL_i                 -1  2 computes change in trade balance by commodity and by region (HT 97)
+    2    1
+  110 TRADEBALANCE               -1  1 computes change in trade balance (X - M), by region (HT 98)
+    1
+  111 DTBALRATIO                 -1  1 change in ratio of trade balance to regional income
+    1
+  112 GOVUSHD                    -1  1 utility from government consumption in r
+    1
+  113 PRIVDMNDSEV                -1  2 private hhld demands for composite commodities, for EV calc.
+    2    1
+  114 PRIVATEUEV                 -1  1 computation of utility from private consumption in r (HT 45)
+    1
+  115 UTILELASPRIVEV             -1  1 elasticity of cost wrt utility from private consn, for EV calc.
+    1
+  116 DPARAVEV                   -1  1 average distribution parameter shift, for EV calc.
+    1
+  117 UTILITELASTICEV            -1  1 elasticity of cost of utility wrt utility, for EV calc.
+    1
+  118 PCONSEXPEV                 -1  1 private consumption expenditure, for EV calc.
+    1
+  119 GOVCONSEXPEV               -1  1 government consumption expenditure
+    1
+  120 SAVINGEV                   -1  1 saving
+    1
+  121 SAVEUEV                    -1  1 saving
+    1
+  122 INCOME_EQUIV               -1  1 equivalent income
+    1
+  123 EVREG                      -1  1 regional EV (HT 67)
+    1
+  124 EVWLD                       1  0 EV for the world (HT 68)
+  125 EV_DECOMPOSITION           -1  1 decomposition of Equivalent Variation
+    1
+  126 WORLDEV                     1  0 Equivalent Variation for the world
+  127 CNT_WEV_dpar               -1  1
+    1
+  128 CONT_EV_pop                -1  1
+    1
+  129 CONT_EV_qimr               -1  1
+    1
+  130 CONT_EV_alleffir_E         -1  2
+    6    1
+  131 CONT_EV_alleffir_T         -1  2
+    2    1
+  132 CNT_EV_cgdsr               -1  1
+    1
+  133 CONT_EV_endwr              -1  1
+    1
+  134 CONT_EV_endwir             -1  2
+    6    1
+  135 CONT_EV_techr              -1  1
+    1
+  136 CONT_EV_tech_aor           -1  1
+    1
+  137 CONT_EV_tech_afer          -1  1
+    1
+  138 CONT_EV_tech_avar          -1  1
+    1
+  139 CONT_EV_tech_afr           -1  1
+    1
+  140 CONT_EV_tech_atrr          -1  1
+    1
+  141 CONT_EV_tech_amsr          -1  1
+    1
+  142 CONT_EV_kbr                -1  1
+    1
+  143 EXPPRICE_MARG              -1  2 price index for total exports of m from r
+    3    1
+  144 EXPPRICE_NMRG              -1  2 price index for total exports of i from r
+    4    1
+  145 IMPPRICE1_MARG             -1  2 price index for total imports of m in s -- margins commodities
+    3    1
+  146 IMPPRICE1_NMRG             -1  2 price index for total imports of i in s -- non-margins commodities
+    4    1
+  147 WRLDPRICEi                 -1  1 world export price index for good i
+    2
+  148 WRLDPRICE                   1  0 world export price index for all goods
+  149 c1_irEQ                    -1  2 contribution of world export price index of good i to ToT for region r
+    2    1
+  150 c2_irEQ                    -1  2 contribution of regional export price of good i for region r
+    2    1
+  151 c3_irEQ                    -1  2 contribution of imports price index of good i for region r
+    2    1
+  152 c1_rEQ                     -1  1 contribution of world price indexes of all goods to ToT for r
+    1
+  153 c2_rEQ                     -1  1 contribution of regional exports prices to ToT for r
+    1
+  154 c3_rEQ                     -1  1 contribution of regional import prices to ToT for r
+    1
+  155 TOT2eq                     -1  1 trade terms for region r, computed from components
+    1
+#READS
+   36
+    1     1 VERNUM            2 GTAPDATA             DVER a h     0
+    2     7 SLUG              3 GTAPPARM             SLUG a h     1
+     6
+    3     8 SAVE              2 GTAPDATA             SAVE a h     1
+     1
+    4     9 VDGA              2 GTAPDATA             VDGA a h     2
+     2     1
+    5    10 VDGM              2 GTAPDATA             VDGM a h     2
+     2     1
+    6    11 VIGA              2 GTAPDATA             VIGA a h     2
+     2     1
+    7    12 VIGM              2 GTAPDATA             VIGM a h     2
+     2     1
+    8    13 VDPA              2 GTAPDATA             VDPA a h     2
+     2     1
+    9    14 VDPM              2 GTAPDATA             VDPM a h     2
+     2     1
+   10    15 VIPA              2 GTAPDATA             VIPA a h     2
+     2     1
+   11    16 VIPM              2 GTAPDATA             VIPM a h     2
+     2     1
+   12    17 EVOA              2 GTAPDATA             EVOA a h     2
+     6     1
+   13    18 EVFA              2 GTAPDATA             EVFA a h     3
+     6     7     1
+   14    19 VDFA              2 GTAPDATA             VDFA a h     3
+     2     7     1
+   15    20 VIFA              2 GTAPDATA             VIFA a h     3
+     2     7     1
+   16    21 VFM               2 GTAPDATA             VFM  a h     3
+     6     7     1
+   17    22 VIFM              2 GTAPDATA             VIFM a h     3
+     2     7     1
+   18    23 VDFM              2 GTAPDATA             VDFM a h     3
+     2     7     1
+   19    24 VDEP              2 GTAPDATA             VDEP a h     1
+     1
+   20    25 VIMS              2 GTAPDATA             VIMS a h     3
+     2     1     1
+   21    26 VIWS              2 GTAPDATA             VIWS a h     3
+     2     1     1
+   22    27 VXWD              2 GTAPDATA             VXWD a h     3
+     2     1     1
+   23    28 VXMD              2 GTAPDATA             VXMD a h     3
+     2     1     1
+   24    29 VST               2 GTAPDATA             VST  a h     2
+     3     1
+   25    56 ESUBD             3 GTAPPARM             ESBD a h     1
+     2
+   26    61 INCPAR            3 GTAPPARM             INCP a h     2
+     2     1
+   27    65 SUBPAR            3 GTAPPARM             SUBP a h     2
+     2     1
+   28    72 ESUBT             3 GTAPPARM             ESBT a h     1
+     7
+   29    77 ESUBVA            3 GTAPPARM             ESBV a h     1
+     7
+   30    79 VKB               2 GTAPDATA             VKB  a h     1
+     1
+   31    82 RORFLEX           3 GTAPPARM             RFLX a h     1
+     1
+   32    83 RORDELTA          3 GTAPPARM             RDLT a h     0
+   33    85 ESUBM             3 GTAPPARM             ESBM a h     1
+     2
+   34    86 VTMFSD            2 GTAPDATA             VTWR a h     4
+     3     2     1     1
+   35   104 ETRAE             3 GTAPPARM             ETRE a h     1
+     6
+   36   107 DPARSUM           2 GTAPDATA             DPSM a h     1
+     1
+#READ(EXTRA)
+    5
+    1 el
+ REG          GTAPSETS             H1  
+    2 el
+ TRAD_COMM    GTAPSETS             H2  
+    3 el
+ MARG_COMM    GTAPSETS             MARG
+    4 el
+ CGDS_COMM    GTAPSETS             H9  
+    5 el
+ ENDW_COMM    GTAPSETS             H6  
+#NCVARIABLES
+    9
+   54 tgd                     -1     2 o tax on domestic i purchased by government hhld in r
+    2    1
+   55 tgm                     -1     2 o tax on imported i purchased by govt hhld in r
+    2    1
+   59 tpd                     -1     2 o comm.-, source-spec. shift in tax on private cons. of dom.
+    2    1
+   61 tpm                     -1     2 o comm.-, source-spec. shift in tax on private cons. of imp.
+    2    1
+   77 avaall                  -1     2 o value added augmenting technical change in sector j of r
+    7    1
+   82 tfd                     -1     3 o tax on domestic i purchased by j in r
+    2    7    1
+   83 tfm                     -1     3 o tax on imported i purchased by j in r
+    2    7    1
+   84 tf                      -1     3 o tax on primary factor i used by j in region r
+    6    7    1
+  111 atall                   -1     4 o tech change in ms shipping of i from region r to s
+    3    2    1    1
+#STATEMENTS
+     108   1 fl                                                109  45    0 n
+     110   1 fl                                                111  47    0 n
+     112   1 fl                                                113  55    0 n
+     149   1 cs VERNUM                                         150  36    0 n
+     151   1 rd VERNUM               a                         152  44    0 n
+     153   1 ud VERNUM               ac                        154  17    0 n
+     156   1 st REG                                            158  65    0 n
+     159   1 st TRAD_COMM                                      161  65    0 n
+     162   1 st MARG_COMM                                      164  67    0 n
+     165   1 ss                                                166  37    0 n
+     167   1 st NMRG_COMM                                      168  65    0 n
+     167   1 ss                                                168  65    0 n
+     169   1 st CGDS_COMM                                      171  64    0 n
+     172   1 st ENDW_COMM                                      174  64    0 n
+     175   1 st PROD_COMM                                      176  67    0 n
+     175   1 ss                                                176  67    0 n
+     175   1 ss                                                176  67    0 n
+     175   1 ss                                                176  67    0 n
+     175   1 ss                                                176  67    0 n
+     177   1 st DEMD_COMM                                      178  67    0 n
+     177   1 ss                                                178  67    0 n
+     177   1 ss                                                178  67    0 n
+     177   1 ss                                                178  67    0 n
+     177   1 ss                                                178  67    0 n
+     179   1 st NSAV_COMM                                      180  70    0 n
+     179   1 ss                                                180  70    0 n
+     179   1 ss                                                180  70    0 n
+     179   1 ss                                                180  70    0 n
+     179   1 ss                                                180  70    0 n
+     179   1 ss                                                180  70    0 n
+     179   1 ss                                                180  70    0 n
+     181   1 ss                                                182  37    0 n
+     189   1 cs SIZE_TRAD                                      190  40    0 n
+     191   1 fm                                                192  36    0 n
+     193   1 cs SIZE_ENDW                                      194  40    0 n
+     195   1 fm                                                196  36    0 n
+     197   1 cs SIZE_DEMD                                      198  40    0 n
+     199   1 fm                                                200  36    0 n
+     201   1 fm                                                202  38    0 n
+     204   1 cs SIZE_CGDS                                      205  40    0 n
+     206   1 fm                                                207  36    0 n
+     208   1 cs SIZE_PROD                                      209  40    0 n
+     210   1 fm                                                211  36    0 n
+     212   1 fm                                                213  38    0 n
+     221   1 cs SLUG                                           222  51    0 n
+     223   1 rd SLUG                 a                         224  42    0 n
+     226   1 st ENDWS_COMM                                     228  70    0 n
+     226   1 fm                                                228  70    0 n
+     226   1 ss                                                228  70    0 n
+     226   1 ss                                                228  70    0 n
+     226   1 ss                                                228  70    0 n
+     229   1 st ENDWM_COMM                                     231  62    0 n
+     229   1 ss                                                231  62    0 n
+     229   1 ss                                                231  62    0 n
+     229   1 ss                                                231  62    0 n
+     232   1 st ENDWC_COMM                                     233  57    0 n
+     237   1 ss                                                238  38    0 n
+     237   1 ss                                                238  38    0 n
+     237   1 ss                                                238  38    0 n
+     280   1 vr psave                                          281  46    0 n
+     282   1 vr qsave                                          283  49    0 n
+     284   1 cs SAVE                                           285  80    0 n
+     286   1 ud SAVE                 ap                        287  34    0 n
+     288   1 rd SAVE                 a                         289  42    0 n
+     296   1 vr pgd                                            297  68    0 n
+     298   1 vr qgd                  VDGM                      299  67    0 n
+     300   1 cs VDGA                                           301  72    0 n
+     302   1 ud VDGA                 ap                        303  36    0 n
+     304   1 rd VDGA                 a                         305  42    0 n
+     307   1 vr pm                   1.0                       308  56    0 n
+     309   1 cs VDGM                                           310  72    0 n
+     311   1 ud VDGM                 ap                        312  35    0 n
+     313   1 rd VDGM                 a                         314  42    0 n
+     316   1 vr pgm                                            317  70    0 n
+     318   1 vr qgm                  VIGM                      319  69    0 n
+     320   1 cs VIGA                                           321  67    0 n
+     322   1 ud VIGA                 ap                        323  36    0 n
+     324   1 rd VIGA                 a                         325  42    0 n
+     327   1 vr pim                  1.0                       328  64    0 n
+     329   1 cs VIGM                                           330  58    0 n
+     331   1 ud VIGM                 ap                        332  36    0 n
+     333   1 rd VIGM                 a                         334  42    0 n
+     341   1 vr ppd                                            342  64    0 n
+     343   1 vr qpd                  VDPM                      344  64    0 n
+     345   1 cs VDPA                                           346  69    0 n
+     347   1 ud VDPA                 ap                        348  36    0 n
+     349   1 rd VDPA                 a                         350  42    0 n
+     352   1 cs VDPM                                           353  69    0 n
+     354   1 ud VDPM                 ap                        355  35    0 n
+     356   1 rd VDPM                 a                         357  42    0 n
+     359   1 vr ppm                                            360  66    0 n
+     361   1 vr qpm                  VIPM                      362  66    0 n
+     363   1 cs VIPA                                           364  69    0 n
+     365   1 ud VIPA                 ap                        366  36    0 n
+     367   1 rd VIPA                 a                         368  42    0 n
+     370   1 cs VIPM                                           371  60    0 n
+     372   1 ud VIPM                 ap                        373  35    0 n
+     374   1 rd VIPM                 a                         375  42    0 n
+     382   1 vr ps                                             383  56    0 n
+     384   1 vr qo                   VOM                       385  59    0 n
+     386   1 cs EVOA                                           387  58    0 n
+     388   1 ud EVOA                 ap                        389  34    0 n
+     390   1 rd EVOA                 a                         391  42    0 n
+     393   1 vr pfe                                            394  78    0 n
+     395   1 vr qfe                  VFM                       396  73    0 n
+     397   1 cs EVFA                                           398  74    0 n
+     399   1 ud EVFA                 ap                        400  42    0 n
+     401   1 rd EVFA                 a                         402  42    0 n
+     404   1 vr pfd                                            405  76    0 n
+     406   1 vr qfd                  VDFM                      407  71    0 n
+     408   1 cs VDFA                                           409  69    0 n
+     410   1 ud VDFA                 ap                        411  42    0 n
+     412   1 rd VDFA                 a                         413  42    0 n
+     415   1 vr pfm                                            416  65    0 n
+     417   1 vr qfm                  VIFM                      418  58    0 n
+     419   1 cs VIFA                                           420  69    0 n
+     421   1 ud VIFA                 ap                        422  42    0 n
+     423   1 rd VIFA                 a                         424  42    0 n
+     426   1 vr pmes                                           427  72    0 n
+     428   1 cs VFM                                            429  76    0 n
+     430   1 ud VFM                  sp                        431  38    0 n
+     432   1 ud VFM                  sp                        433  42    0 n
+     434   1 rd VFM                  a                         435  40    0 n
+     437   1 cs VIFM                                           438  68    0 n
+     439   1 ud VIFM                 ap                        440  40    0 n
+     441   1 rd VIFM                 a                         442  42    0 n
+     444   1 cs VDFM                                           445  69    0 n
+     446   1 ud VDFM                 ap                        447  39    0 n
+     448   1 rd VDFM                 a                         449  42    0 n
+     456   1 vr kb                                             457  53    0 n
+     458   1 vr pcgds                                          459  58    0 n
+     460   1 cs VDEP                                           461  62    0 n
+     462   1 ud VDEP                 ap                        463  31    0 n
+     464   1 rd VDEP                 a                         465  42    0 n
+     476   1 vr pms                                            477  73    0 n
+     478   1 vr qxs                  VXMD                      479  66    0 n
+     480   1 cs VIMS                                           481  75    0 n
+     482   1 ud VIMS                 ap                        483  42    0 n
+     484   1 rd VIMS                 a                         485  42    0 n
+     487   1 vr pcif                                           488  72    0 n
+     489   1 cs VIWS                                           490  74    0 n
+     491   1 ud VIWS                 ap                        492  43    0 n
+     493   1 rd VIWS                 a                         494  42    0 n
+     496   1 vr pfob                                           497  72    0 n
+     498   1 cs VXWD                                           499  74    0 n
+     500   1 ud VXWD                 ap                        501  43    0 n
+     502   1 rd VXWD                 a                         503  42    0 n
+     505   1 cs VXMD                                           507  72    0 n
+     508   1 ud VXMD                 ap                        509  39    0 n
+     510   1 rd VXMD                 a                         511  42    0 n
+     513   1 vr qst                  VST                       514  62    0 n
+     515   1 cs VST                                            517  80    0 n
+     518   1 ud VST                  ap                        519  34    0 n
+     520   1 rd VST                  a                         521  40    0 n
+     535   1 vr y                                              536  51    0 n
+     537   1 vr pop                                            538  35    0 n
+     539   1 vr qoes                                           540  66    0 n
+     541   1 vr endwslack                                      542  77    0 n
+     548   1 vr pgov                                           549  67    0 n
+     550   1 vr yg                                             552  64    0 n
+     553   1 vr ug                                             554  64    0 n
+     555   1 vr ppriv                                          557  68    0 n
+     558   1 vr uepriv                                         560  64    0 n
+     561   1 vr yp                                             562  67    0 n
+     563   1 vr up                                             564  66    0 n
+     565   1 vr to                                             566  51    0 n
+     572   1 vr qim                  VIM                       573  74    0 n
+     574   1 vr globalcgds                                     575  69    0 n
+     576   1 vr pcgdswld                                       577  79    0 n
+     598   1 vr del_taxrgc                                     599  78    0 n
+     600   1 vr del_taxrpc                                     601  75    0 n
+     602   1 vr del_taxriu                                     603  77    0 n
+     604   1 vr del_taxrfu                                     605  79    0 n
+     606   1 vr del_taxrout                                    607  63    0 n
+     608   1 vr del_taxrexp                                    609  63    0 n
+     610   1 vr del_taxrimp                                    611  63    0 n
+     612   1 vr del_taxrinc                                    613  63    0 n
+     635   1 cs VFA                                            636  80    0 n
+     637   1 fm                                                638  29    0 n
+     639   1 fm                                                640  43    0 n
+     642   1 cs VOA                                            643  75    0 n
+     644   1 fm                                                645  25    0 n
+     646   1 fm                                                647  44    0 n
+     649   1 cs VDM                                            650  74    0 n
+     651   1 fm                                                652  69    0 n
+     654   1 cs VOM                                            655  74    0 n
+     656   1 fm                                                657  44    0 n
+     658   1 fm                                                659  61    0 n
+     660   1 fm                                                661  50    0 n
+     662   1 fm                                                663  24    0 n
+     696   1 cs VGA                                            697  74    0 n
+     698   1 fm                                                699  37    0 n
+     700   1 cs GOVEXP                                         701  53    0 n
+     702   1 fm                                                703  43    0 n
+     706   1 cs VPA                                            707  77    0 n
+     708   1 fm                                                709  37    0 n
+     710   1 cs PRIVEXP                                        711  63    0 n
+     712   1 fm                                                713  44    0 n
+     716   1 cs INCOME                                         717  76    0 n
+     718   1 fm                                                719  49    0 n
+     726   1 cs DGTAX                                          727  80    0 n
+     728   1 fm                                                729  39    0 n
+     730   1 cs IGTAX                                          731  80    0 n
+     732   1 fm                                                733  39    0 n
+     734   1 cs TGC                                            735  56    0 n
+     736   1 fm                                                737  55    0 n
+     739   1 cs DPTAX                                          740  77    0 n
+     741   1 fm                                                742  39    0 n
+     743   1 cs IPTAX                                          744  77    0 n
+     745   1 fm                                                746  39    0 n
+     747   1 cs TPC                                            748  53    0 n
+     749   1 fm                                                750  55    0 n
+     752   1 cs DFTAX                                          753  74    0 n
+     754   1 fm                                                755  45    0 n
+     756   1 cs IFTAX                                          757  74    0 n
+     758   1 fm                                                759  45    0 n
+     760   1 cs TIU                                            761  68    0 n
+     762   1 fm                                                763  77    0 n
+     765   1 cs ETAX                                           766  77    0 n
+     767   1 fm                                                768  42    0 n
+     769   1 cs TFU                                            770  64    0 n
+     771   1 fm                                                772  61    0 n
+     774   1 cs PTAX                                           775  51    0 n
+     776   1 fm                                                777  36    0 n
+     778   1 cs TOUT                                           779  45    0 n
+     780   1 fm                                                781  42    0 n
+     783   1 cs XTAXD                                          784  77    0 n
+     785   1 fm                                                786  45    0 n
+     787   1 cs TEX                                            788  40    0 n
+     789   1 fm                                                790  56    0 n
+     792   1 cs MTAX                                           793  76    0 n
+     794   1 fm                                                795  44    0 n
+     796   1 cs TIM                                            797  40    0 n
+     798   1 fm                                                799  55    0 n
+     807   1 cs ESUBD                                          809  68    0 n
+     810   1 rd ESUBD                a                         811  43    0 n
+     814   1 cs REGINV                                         815  74    0 n
+     816   1 fm                                                817  43    0 n
+     818   1 cs NETINV                                         819  54    0 n
+     820   1 fm                                                821  53    0 n
+     822   1 cs GLOBINV                                        823  54    0 n
+     824   1 fm                                                825  36    0 n
+     828   1 cs CONSHR                                         829  77    0 n
+     830   1 fm                                                831  56    0 n
+     832   1 cs INCPAR                                         834  68    0 n
+     835   1 rd INCPAR               a                         836  44    0 n
+     837   1 cs UELASPRIV                                      839  64    0 n
+     840   1 fm                                                841  63    0 n
+     875   1 vr pg                                             876  73    0 n
+     877   1 vr qg                                             878  67    0 n
+     885   1 eq GPRICEINDEX                                    888  65    0 n
+     890   1 eq GOVDMNDS                                       893  51    0 n
+     895   1 eq GOVU                                           898  37    0 n
+     905   1 vr tgd                                            906  69    0 n
+     908   1 vr tgm                                            909  64    0 n
+     911   1 eq GHHDPRICE                                      914  34    0 n
+     916   1 eq GHHIPRICES                                     919  35    0 n
+     921   1 cs GMSHR                                          922  69    0 n
+     923   1 fm                                                924  38    0 n
+     926   1 eq GCOMPRICE                                      929  67    0 n
+     931   1 eq GHHLDAGRIMP                                    934  57    0 n
+     936   1 eq GHHLDDOM                                       939  57    0 n
+     941   1 eq TGCRATIO                                       948  71    0 n
+     968   1 vr pp                                             969  70    0 n
+     970   1 vr qp                                             971  64    0 n
+     978   1 eq PHHLDINDEX                                     981  55    0 n
+     983   1 eq PRIVATEU                                       986  53    0 n
+     993   1 cs XWCONSHR                                       995  55    0 n
+     996   1 fm                                                997  61    0 n
+     999   1 eq UTILELASPRIV                                  1003  72    0 n
+    1010   1 cs SUBPAR                                        1012  67    0 n
+    1013   1 rd SUBPAR               a                        1014  44    0 n
+    1019   1 cs ALPHA                                         1020  78    0 n
+    1021   1 fm                                               1022  33    0 n
+    1024   1 cs APE                                           1025  78    0 n
+    1026   1 fm                                               1028  79    0 n
+    1029   1 fm                                               1033  35    0 n
+    1035   1 cs EY                                            1036  72    0 n
+    1037   1 fm                                               1042  68    0 n
+    1044   1 cs EP                                            1046  80    0 n
+    1047   1 fm                                               1048  18    0 n
+    1049   1 fm                                               1050  53    0 n
+    1052   1 eq PRIVDMNDS                                     1056  77    0 n
+    1068   1 vr tp                                            1069  64    0 n
+    1076   1 cs LevTPD                                        1076  68    0 n
+    1077   1 zd                                               1077  21    0 n
+    1078   1 fm                                               1078  73    0 n
+    1079   1 zd                                               1079  15    0 n
+    1080   1 vr tpd                  LevTPD                   1081  76    0 n
+    1082   1 vr atpd                                          1083  76    0 n
+    1084   1 eq TPDSHIFT                                      1087  33    0 n
+    1089   1 eq PHHDPRICE                                     1092  35    0 n
+    1094   1 vr tpm                                           1095  76    0 n
+    1096   1 vr atpm                                          1097  76    0 n
+    1098   1 eq TPMSHIFT                                      1101  33    0 n
+    1103   1 eq PHHIPRICES                                    1106  36    0 n
+    1108   1 eq TPCRATIO                                      1115  72    0 n
+    1117   1 cs PMSHR                                         1118  68    0 n
+    1119   1 fm                                               1120  38    0 n
+    1122   1 eq PCOMPRICE                                     1125  66    0 n
+    1127   1 eq PHHLDDOM                                      1130  57    0 n
+    1132   1 eq PHHLDAGRIMP                                   1135  57    0 n
+    1180   1 vr pva                                           1181  71    0 n
+    1182   1 vr qva                                           1183  55    0 n
+    1184   1 vr pf                                            1185  65    0 n
+    1186   1 vr qf                                            1187  66    0 n
+    1188   1 vr ao                                            1189  68    0 n
+    1190   1 vr ava                                           1191  69    0 n
+    1192   1 vr af                                            1193  79    0 n
+    1194   1 vr afe                                           1195  69    0 n
+    1196   1 vr ams                                           1197  77    0 n
+    1204   1 vr aosec                                         1205  59    0 n
+    1206   1 vr aoreg                                         1207  48    0 n
+    1208   1 vr aoall                                         1209  71    0 n
+    1210   1 eq AOWORLD                                       1213  47    0 n
+    1215   1 vr avasec                                        1216  65    0 n
+    1217   1 vr avareg                                        1218  54    0 n
+    1219   1 vr avaall                                        1220  77    0 n
+    1221   1 eq AVAWORLD                                      1224  51    0 n
+    1226   1 cs ESUBT                                         1228  72    0 n
+    1229   1 rd ESUBT                a                        1230  43    0 n
+    1232   1 eq VADEMAND                                      1237  63    0 n
+    1243   1 vr afcom                                         1244  64    0 n
+    1245   1 vr afsec                                         1246  65    0 n
+    1247   1 vr afreg                                         1248  54    0 n
+    1249   1 vr afall                                         1250  75    0 n
+    1251   1 eq AFWORLD                                       1254  62    0 n
+    1256   1 eq INTDEMAND                                     1261  65    0 n
+    1272   1 vr tfd                                           1273  57    0 n
+    1274   1 eq DMNDDPRICE                                    1277  38    0 n
+    1284   1 vr tfm                                           1285  57    0 n
+    1286   1 eq DMNDIPRICES                                   1289  39    0 n
+    1296   1 eq TIURATIO                                      1303  80    0 n
+    1305   1 cs FMSHR                                         1306  79    0 n
+    1307   1 zd                                               1307  23    0 n
+    1308   1 fm                                               1309  44    0 n
+    1310   1 zd                                               1310  15    0 n
+    1311   1 eq ICOMPRICE                                     1314  76    0 n
+    1316   1 eq INDIMP                                        1319  65    0 n
+    1321   1 eq INDDOM                                        1324  65    0 n
+    1331   1 vr tf                                            1332  64    0 n
+    1334   1 eq MPFACTPRICE                                   1337  37    0 n
+    1339   1 eq SPFACTPRICE                                   1342  41    0 n
+    1344   1 vr afecom                                        1345  65    0 n
+    1346   1 vr afesec                                        1347  66    0 n
+    1348   1 vr afereg                                        1349  55    0 n
+    1350   1 vr afeall                                        1351  76    0 n
+    1352   1 eq AFEWORLD                                      1355  67    0 n
+    1357   1 cs VVA                                           1358  55    0 n
+    1359   1 fm                                               1360  44    0 n
+    1361   1 cs SVADEFAULT                                    1362  47    0 n
+    1363   1 fm                                               1366  49    0 n
+    1367   1 cs SVA                                           1368  61    0 n
+    1369   1 fm                                               1370  39    0 n
+    1371   1 fm                                               1372  31    0 n
+    1373   1 eq VAPRICE                                       1376  72    0 n
+    1378   1 eq TFURATIO                                      1385  80    0 n
+    1387   1 cs ESUBVA                                        1389  76    0 n
+    1390   1 rd ESUBVA               a                        1391  44    0 n
+    1393   1 eq ENDWDEMAND                                    1398  59    0 n
+    1405   1 eq OUTPUTPRICES                                  1408  32    0 n
+    1415   1 eq TOUTRATIO                                     1420  69    0 n
+    1422   1 vr profitslack                                   1423  68    0 n
+    1428   1 cs STC                                           1429  55    0 n
+    1430   1 fm                                               1431  59    0 n
+    1433   1 eq ZEROPROFITS                                   1439  27    0 n
+    1471   1 vr rental                                        1472  59    0 n
+    1473   1 vr ke                                            1474  47    0 n
+    1475   1 vr rore                                          1476  66    0 n
+    1477   1 vr rorc                                          1478  65    0 n
+    1479   1 vr qcgds                                         1480  63    0 n
+    1487   1 vr ksvces                                        1488  53    0 n
+    1489   1 eq KAPSVCES                                      1493  80    0 n
+    1499   1 eq KAPRENTAL                                     1503  80    0 n
+    1505   1 eq CAPGOODS                                      1509  61    0 n
+    1515   1 eq PRCGOODS                                      1518  66    0 n
+    1520   1 eq KBEGINNING                                    1523  22    0 n
+    1529   1 cs VKB                                           1530  70    0 n
+    1531   1 ud VKB                  ap                       1532  30    0 n
+    1533   1 rd VKB                  a                        1534  40    0 n
+    1541   1 cs INVKERATIO                                    1543  70    0 n
+    1544   1 fm                                               1545  53    0 n
+    1547   1 eq KEND                                          1550  69    0 n
+    1557   1 cs GRNETRATIO                                    1558  73    0 n
+    1559   1 fm                                               1562  50    0 n
+    1566   1 eq RORCURRENT                                    1569  53    0 n
+    1571   1 cs RORFLEX                                       1573  77    0 n
+    1574   1 rd RORFLEX              a                        1575  45    0 n
+    1585   1 eq ROREXPECTED                                   1588  53    0 n
+    1597   1 vr EXPAND                                        1598  76    0 n
+    1599   1 eq BALDWIN                                       1602  37    0 n
+    1609   1 cs RORDELTA                                      1611  78    0 n
+    1612   1 rd RORDELTA             a                        1613  46    0 n
+    1623   1 vr rorg                                          1624  56    0 n
+    1625   1 vr cgdslack                                      1626  48    0 n
+    1632   1 eq RORGLOBAL                                     1638  70    0 n
+    1645   1 eq GLOBALINV                                     1651  71    0 n
+    1663   1 eq PRICGDS                                       1665  60    0 n
+    1672   1 vr psaveslack                                    1673  68    0 n
+    1682   1 eq SAVEPRICE                                     1688  24    0 n
+    1710   1 vr tx                                            1711  68    0 n
+    1712   1 vr txs                                           1713  77    0 n
+    1722   1 eq EXPRICES                                      1725  49    0 n
+    1727   1 eq TEXPRATIO                                     1733  58    0 n
+    1742   1 vr tm                                            1743  65    0 n
+    1744   1 vr tms                                           1745  76    0 n
+    1755   1 eq MKTPRICES                                     1758  52    0 n
+    1760   1 cs MSHRS                                         1761  79    0 n
+    1762   1 fm                                               1763  57    0 n
+    1764   1 eq DPRICEIMP                                     1767  68    0 n
+    1769   1 vr pr                   1.0                      1770  58    0 n
+    1771   1 eq PRICETGT                                      1774  33    0 n
+    1787   1 cs ESUBM                                         1789  77    0 n
+    1790   1 rd ESUBM                a                        1791  43    0 n
+    1793   1 eq IMPORTDEMAND                                  1798  58    0 n
+    1800   1 eq TIMPRATIO                                     1806  57    0 n
+    1825   1 vr qtmfsd                                        1826  70    0 n
+    1831   1 vr atmfsd                                        1832  76    0 n
+    1838   1 vr atm                                           1839  48    0 n
+    1840   1 vr atf                                           1841  52    0 n
+    1842   1 vr ats                                           1843  50    0 n
+    1844   1 vr atd                                           1845  41    0 n
+    1846   1 vr atall                                         1847  75    0 n
+    1848   1 vr ptrans                                        1849  78    0 n
+    1853   1 vr qtm                                           1854  35    0 n
+    1855   1 vr pt                                            1856  56    0 n
+    1861   1 cs VTMFSD                                        1863  72    0 n
+    1864   1 ud VTMFSD               ap                       1865  46    0 n
+    1866   1 rd VTMFSD               a                        1867  44    0 n
+    1869   1 cs VTFSD                                         1870  79    0 n
+    1871   1 fm                                               1872  53    0 n
+    1878   1 cs VTMUSE                                        1879  63    0 n
+    1880   1 fm                                               1881  74    0 n
+    1883   1 cs VTMPROV                                       1884  59    0 n
+    1885   1 fm                                               1886  38    0 n
+    1891   1 cs VTRPROV                                       1892  58    0 n
+    1893   1 fm                                               1894  44    0 n
+    1896   1 cs VT                                            1897  39    0 n
+    1898   1 fm                                               1899  48    0 n
+    1906   1 eq QTRANS_MFSD                                   1909  51    0 n
+    1925   1 cs VTMUSESHR                                     1926  71    0 n
+    1927   1 fm                                               1928  43    0 n
+    1929   1 fm                                               1931  53    0 n
+    1933   1 eq TRANS_DEMAND                                  1938  50    0 n
+    1945   1 cs VTSUPPSHR                                     1946  70    0 n
+    1947   1 fm                                               1948  37    0 n
+    1949   1 fm                                               1950  43    0 n
+    1952   1 eq PTRANSPORT                                    1955  49    0 n
+    1967   1 cs VTUSE                                         1968  50    0 n
+    1969   1 fm                                               1972  32    0 n
+    1974   1 cs VTFSD_MSH                                     1975  78    0 n
+    1976   1 fm                                               1978  56    0 n
+    1979   1 fm                                               1981  43    0 n
+    1983   1 eq TRANSCOSTINDEX                                1987  75    0 n
+    1989   1 eq TRANSTECHANGE                                 1992  73    0 n
+    1994   1 eq TRANSVCES                                     1997  42    0 n
+    2005   1 cs VIWSCOST                                      2006  77    0 n
+    2007   1 fm                                               2008  49    0 n
+    2010   1 zd                                               2010  36    0 n
+    2011   1 cs FOBSHR                                        2012  39    0 n
+    2013   1 fm                                               2014  50    0 n
+    2015   1 zd                                               2015  30    0 n
+    2017   1 cs TRNSHR                                        2018  45    0 n
+    2019   1 fm                                               2020  38    0 n
+    2022   1 eq FOBCIF                                        2027  39    0 n
+    2054   1 cs XSHRPRIV                                      2055  65    0 n
+    2056   1 fm                                               2057  41    0 n
+    2059   1 cs XSHRGOV                                       2060  67    0 n
+    2061   1 fm                                               2062  39    0 n
+    2064   1 cs XSHRSAVE                                      2065  52    0 n
+    2066   1 fm                                               2067  38    0 n
+    2069   1 vr uelas                                         2070  59    0 n
+    2072   1 vr dppriv                                        2073  61    0 n
+    2074   1 vr dpgov                                         2075  63    0 n
+    2076   1 vr dpsave                                        2077  48    0 n
+    2084   1 eq FACTORINCPRICES                               2087  32    0 n
+    2089   1 cs TINC                                          2090  41    0 n
+    2091   1 fm                                               2092  42    0 n
+    2094   1 eq TINCRATIO                                     2099  69    0 n
+    2101   1 cs REVSHR                                        2102  18    0 n
+    2103   1 fm                                               2104  62    0 n
+    2105   1 eq ENDW_PRICE                                    2108  60    0 n
+    2110   1 cs ETRAE                                         2112  71    0 n
+    2113   1 rd ETRAE                a                        2114  43    0 n
+    2119   1 eq ENDW_SUPPLY                                   2122  80    0 n
+    2129   1 cs FY                                            2130  61    0 n
+    2131   1 fm                                               2132  49    0 n
+    2133   1 vr fincome                                       2134  70    0 n
+    2135   1 eq FACTORINCOME                                  2140  40    0 n
+    2142   1 vr del_indtaxr                                   2143  72    0 n
+    2144   1 eq DINDTAXRATIO                                  2149  59    0 n
+    2151   1 vr del_ttaxr                                     2152  61    0 n
+    2153   1 eq DTAXRATIO                                     2158  76    0 n
+    2165   1 vr incomeslack                                   2166  76    0 n
+    2171   1 cs INDTAX                                        2172  45    0 n
+    2173   1 fm                                               2174  78    0 n
+    2176   1 eq REGIONALINCOME                                2183  37    0 n
+    2196   1 vr dpav                                          2197  67    0 n
+    2198   1 eq DPARAV                                        2204  34    0 n
+    2206   1 eq UTILITELASTIC                                 2209  49    0 n
+    2211   1 eq PRIVCONSEXP                                   2214  55    0 n
+    2216   1 eq GOVCONSEXP                                    2219  39    0 n
+    2221   1 eq SAVING                                        2224  54    0 n
+    2231   1 vr p                                             2232  73    0 n
+    2233   1 eq PRICEINDEXREG                                 2239  33    0 n
+    2241   1 vr au                                            2242  54    0 n
+    2243   1 vr dpsum                                         2244  52    0 n
+    2246   1 cs DPARSUM                                       2247  50    0 n
+    2248   1 rd DPARSUM              a                        2249  45    0 n
+    2250   1 ud DPARSUM              ap                       2251  26    0 n
+    2253   1 cs UTILELAS                                      2254  62    0 n
+    2255   1 fm                                               2257  79    0 n
+    2259   1 cs DPARPRIV                                      2260  63    0 n
+    2261   1 fm                                               2262  59    0 n
+    2264   1 cs DPARGOV                                       2265  65    0 n
+    2266   1 fm                                               2267  42    0 n
+    2269   1 cs DPARSAVE                                      2270  50    0 n
+    2271   1 fm                                               2272  44    0 n
+    2274   1 cs UTILPRIV                                      2275  53    0 n
+    2276   1 fm                                               2277  22    0 n
+    2278   1 ud UTILPRIV             ap                       2279  24    0 n
+    2281   1 cs UTILGOV                                       2282  55    0 n
+    2283   1 fm                                               2284  21    0 n
+    2285   1 ud UTILGOV              ap                       2286  23    0 n
+    2288   1 cs UTILSAVE                                      2289  40    0 n
+    2290   1 fm                                               2291  22    0 n
+    2292   1 ud UTILSAVE             ac                       2293  60    0 n
+    2295   1 vr u                                             2296  72    0 n
+    2297   1 eq UTILITY                                       2305  55    0 n
+    2307   1 eq DISTPARSUM                                    2313  34    0 n
+    2329   1 cs SHRDFM                                        2330  80    0 n
+    2331   1 fm                                               2332  43    0 n
+    2334   1 cs SHRDPM                                        2335  76    0 n
+    2336   1 fm                                               2337  39    0 n
+    2339   1 cs SHRDGM                                        2340  67    0 n
+    2341   1 fm                                               2342  39    0 n
+    2344   1 vr qds                  VDM                      2345  52    0 n
+    2346   1 eq MKTCLDOM                                      2352  33    0 n
+    2354   1 cs SHRDM                                         2355  53    0 n
+    2356   1 fm                                               2357  37    0 n
+    2359   1 cs SHRST                                         2360  73    0 n
+    2361   1 fm                                               2362  37    0 n
+    2364   1 cs SHRXMD                                        2365  59    0 n
+    2366   1 fm                                               2367  43    0 n
+    2369   1 vr tradslack                                     2370  78    0 n
+    2377   1 eq MKTCLTRD_MARG                                 2384  25    0 n
+    2385   1 eq MKTCLTRD_NMRG                                 2391  25    0 n
+    2393   1 cs VIM                                           2394  80    0 n
+    2395   1 fm                                               2396  69    0 n
+    2398   1 cs SHRIFM                                        2399  63    0 n
+    2400   1 fm                                               2401  43    0 n
+    2403   1 cs SHRIPM                                        2404  65    0 n
+    2405   1 fm                                               2406  39    0 n
+    2408   1 cs SHRIGM                                        2409  67    0 n
+    2410   1 fm                                               2411  39    0 n
+    2413   1 eq MKTCLIMP                                      2419  33    0 n
+    2421   1 cs SHREM                                         2422  80    0 n
+    2423   1 fm                                               2424  41    0 n
+    2426   1 eq MKTCLENDWM                                    2429  75    0 n
+    2435   1 eq MKTCLENDWS                                    2438  29    0 n
+    2448   1 vr walras_sup                                    2449  77    0 n
+    2450   1 eq WALRAS_S                                      2452  39    0 n
+    2459   1 vr walras_dem                                    2460  75    0 n
+    2461   1 eq WALRAS_D                                      2463  71    0 n
+    2470   1 vr walraslack                                    2471  56    0 n
+    2477   1 eq WALRAS                                        2479  41    0 n
+    2521   1 vr vxwfob                                        2522  77    0 n
+    2523   1 vr viwcif                                        2524  77    0 n
+    2525   1 vr vxwreg                                        2526  58    0 n
+    2527   1 vr viwreg                                        2528  75    0 n
+    2530   1 cs VXW                                           2531  72    0 n
+    2532   1 fm                                               2533  50    0 n
+    2534   1 fm                                               2535  39    0 n
+    2537   1 cs VXWREGION                                     2538  64    0 n
+    2539   1 fm                                               2540  46    0 n
+    2542   1 cs VIW                                           2543  67    0 n
+    2544   1 fm                                               2545  39    0 n
+    2546   1 cs VIWREGION                                     2547  74    0 n
+    2548   1 fm                                               2549  46    0 n
+    2556   1 vr pfactreal            1.0                      2557  71    0 n
+    2558   1 eq REALRETURN                                    2561  40    0 n
+    2567   1 cs VENDWREG                                      2568  71    0 n
+    2569   1 fm                                               2570  45    0 n
+    2572   1 vr pfactor              1.0                      2573  68    0 n
+    2574   1 eq PRIMFACTPR                                    2577  68    0 n
+    2579   1 cs VENDWWLD                                      2580  68    0 n
+    2581   1 fm                                               2582  39    0 n
+    2583   1 vr pfactwld             1.0                      2584  54    0 n
+    2585   1 eq PRIMFACTPRWLD                                 2587  63    0 n
+    2597   1 vr psw                  1.0                      2598  69    0 n
+    2599   1 eq REGSUPRICE                                    2604  47    0 n
+    2611   1 vr pdw                  1.0                      2612  68    0 n
+    2613   1 eq REGDEMPRICE                                   2617  66    0 n
+    2623   1 vr tot                  1.0                      2624  69    0 n
+    2625   1 eq TOTeq                                         2628  29    0 n
+    2635   1 cs GDP                                           2636  50    0 n
+    2637   1 fm                                               2644  52    0 n
+    2650   1 vr vgdp                                          2651  39    0 n
+    2652   1 eq VGDP_r                                        2662  55    0 n
+    2664   1 vr pgdp                 1.0                      2665  32    0 n
+    2666   1 eq PGDP_r                                        2675  66    0 n
+    2677   1 vr qgdp                 GDP                      2678  35    0 n
+    2679   1 eq QGDP_r                                        2688  65    0 n
+    2693   1 vr compvalad                                     2694  74    0 n
+    2695   1 eq COMPVALADEQ                                   2698  39    0 n
+    2719   1 vr pxw                  1.0                      2720  66    0 n
+    2722   1 cs VXWCOMMOD                                     2723  73    0 n
+    2724   1 fm                                               2725  40    0 n
+    2727   1 cs VXWLD                                         2728  56    0 n
+    2729   1 fm                                               2730  37    0 n
+    2732   1 cs VIWCOMMOD                                     2733  74    0 n
+    2734   1 fm                                               2735  40    0 n
+    2737   1 cs PW_PM                                         2738  53    0 n
+    2739   1 fm                                               2740  67    0 n
+    2741   1 cs VOW                                           2742  79    0 n
+    2743   1 fm                                               2744  74    0 n
+    2745   1 fm                                               2746  63    0 n
+    2748   1 cs VWOW                                          2749  60    0 n
+    2750   1 fm                                               2751  35    0 n
+    2753   1 cs VWOU                                          2754  58    0 n
+    2755   1 fm                                               2756  79    0 n
+    2763   1 eq VREGEX_ir_MARG                                2768  42    0 n
+    2769   1 eq VREGEX_ir_NMRG                                2773  63    0 n
+    2775   1 eq VREGEX_r                                      2778  72    0 n
+    2780   1 vr vxwcom                                        2781  67    0 n
+    2782   1 eq VWLDEX_i                                      2785  66    0 n
+    2787   1 vr vxwwld                                        2788  36    0 n
+    2789   1 eq VWLDEX                                        2791  58    0 n
+    2793   1 eq VREGIM_is                                     2797  63    0 n
+    2799   1 eq VREGIM_s                                      2802  72    0 n
+    2804   1 vr viwcom                                        2805  73    0 n
+    2806   1 eq VWLDIM_i                                      2809  66    0 n
+    2811   1 vr valuew                                        2812  50    0 n
+    2813   1 eq VWLDOUT                                       2816  70    0 n
+    2818   1 vr valuewu                                       2819  66    0 n
+    2820   1 eq VWLDOUTUSE                                    2826  66    0 n
+    2833   1 eq PREGEX_ir_MARG                                2837  69    0 n
+    2839   1 eq PREGEX_ir_NMRG                                2842  64    0 n
+    2844   1 vr pxwreg               1.0                      2845  64    0 n
+    2846   1 eq PREGEX_r                                      2849  69    0 n
+    2851   1 vr pxwcom               1.0                      2852  73    0 n
+    2853   1 eq PWLDEX_i                                      2856  63    0 n
+    2858   1 vr pxwwld               1.0                      2859  42    0 n
+    2860   1 eq PWLDEX                                        2862  58    0 n
+    2864   1 vr piw                                           2865  63    0 n
+    2866   1 eq PREGIM_is                                     2869  64    0 n
+    2871   1 vr piwreg               1.0                      2872  64    0 n
+    2873   1 eq PREGIM_s                                      2876  69    0 n
+    2878   1 vr piwcom               1.0                      2879  73    0 n
+    2880   1 eq PWLDIM_i                                      2883  63    0 n
+    2885   1 vr pw                                            2886  58    0 n
+    2887   1 eq PWLDOUT                                       2890  54    0 n
+    2892   1 vr pwu                  1.0                      2893  74    0 n
+    2894   1 eq PWLDUSE                                       2900  52    0 n
+    2907   1 vr qxw                  VXW                      2908  67    0 n
+    2909   1 eq QREGEX_ir_MARG                                2913  69    0 n
+    2914   1 eq QREGEX_ir_NMRG                                2917  63    0 n
+    2922   1 vr qxwreg               VXWREGION                2923  59    0 n
+    2924   1 eq QREGEX_r                                      2927  69    0 n
+    2932   1 vr qxwcom               VXWCOMMOD                2933  68    0 n
+    2934   1 eq QWLDEX_i                                      2937  63    0 n
+    2942   1 vr qxwwld               VXWLD                    2943  37    0 n
+    2944   1 eq QWLDEX                                        2946  58    0 n
+    2951   1 vr qiw                                           2952  67    0 n
+    2953   1 eq QREGIM_is                                     2956  63    0 n
+    2961   1 vr qiwreg               VIWREGION                2962  59    0 n
+    2963   1 eq QREGIM_s                                      2966  69    0 n
+    2971   1 vr qiwcom               VIWCOMMOD                2972  68    0 n
+    2973   1 eq QWLDIM_i                                      2976  63    0 n
+    2981   1 vr qow                                           2982  57    0 n
+    2983   1 eq QWLDOUT                                       2986  54    0 n
+    2991   1 vr qowu                 VWOU                     2992  73    0 n
+    2993   1 eq QWLDOUTU                                      2999  52    0 n
+    3006   1 vr DTBALi                                        3007  72    0 n
+    3012   1 eq TRADEBAL_i                                    3016  74    0 n
+    3018   1 vr DTBAL                                         3019  61    0 n
+    3020   1 eq TRADEBALANCE                                  3024  78    0 n
+    3034   1 cs TBAL                                          3035  43    0 n
+    3036   1 fm                                               3037  42    0 n
+    3039   1 vr DTBALR                                        3040  70    0 n
+    3041   1 eq DTBALRATIO                                    3044  66    0 n
+    3078   1 vr uelasev                                       3080  64    0 n
+    3081   1 vr ueprivev                                      3083  70    0 n
+    3084   1 vr ugev                                          3085  68    0 n
+    3086   1 vr upev                                          3087  70    0 n
+    3088   1 vr qsaveev                                       3089  68    0 n
+    3090   1 vr yev                                           3091  67    0 n
+    3092   1 vr ypev                                          3094  66    0 n
+    3095   1 vr ygev                                          3097  69    0 n
+    3099   1 cs INCOMEEV                                      3100  50    0 n
+    3101   1 fm                                               3102  28    0 n
+    3103   1 ud INCOMEEV             ap                       3104  25    0 n
+    3106   1 cs UTILPRIVEV                                    3107  69    0 n
+    3108   1 fm                                               3109  32    0 n
+    3110   1 ud UTILPRIVEV           ap                       3111  28    0 n
+    3113   1 cs UTILGOVEV                                     3114  68    0 n
+    3115   1 fm                                               3116  30    0 n
+    3117   1 ud UTILGOVEV            ap                       3118  27    0 n
+    3120   1 cs UTILSAVEEV                                    3121  69    0 n
+    3122   1 fm                                               3123  32    0 n
+    3124   1 ud UTILSAVEEV           ac                       3125  66    0 n
+    3132   1 eq GOVUSHD                                       3135  31    0 n
+    3142   1 vr qpev                                          3144  70    0 n
+    3146   1 cs VPAEV                                         3148  78    0 n
+    3149   1 fm                                               3150  26    0 n
+    3151   1 ud VPAEV                ap                       3152  27    0 n
+    3154   1 cs VPAREGEV                                      3155  78    0 n
+    3156   1 fm                                               3157  47    0 n
+    3162   1 cs CONSHREV                                      3164  73    0 n
+    3165   1 fm                                               3166  45    0 n
+    3167   1 cs EYEV                                          3169  71    0 n
+    3170   1 fm                                               3176  55    0 n
+    3178   1 eq PRIVDMNDSEV                                   3181  56    0 n
+    3186   1 cs UELASPRIVEV                                   3188  68    0 n
+    3189   1 fm                                               3190  67    0 n
+    3192   1 eq PRIVATEUEV                                    3195  48    0 n
+    3197   1 cs XWCONSHREV                                    3199  69    0 n
+    3200   1 fm                                               3201  67    0 n
+    3203   1 eq UTILELASPRIVEV                                3207  68    0 n
+    3218   1 vr ysaveev                                       3219  57    0 n
+    3221   1 cs PRIVEXPEV                                     3223  66    0 n
+    3224   1 fm                                               3225  30    0 n
+    3226   1 ud PRIVEXPEV            ap                       3227  27    0 n
+    3232   1 cs GOVEXPEV                                      3234  69    0 n
+    3235   1 fm                                               3236  28    0 n
+    3237   1 ud GOVEXPEV             ap                       3238  26    0 n
+    3240   1 cs SAVEEV                                        3242  41    0 n
+    3243   1 fm                                               3244  24    0 n
+    3245   1 ud SAVEEV               ap                       3246  27    0 n
+    3248   1 cs XSHRPRIVEV                                    3250  67    0 n
+    3251   1 fm                                               3252  47    0 n
+    3254   1 cs XSHRGOVEV                                     3256  70    0 n
+    3257   1 fm                                               3258  45    0 n
+    3260   1 cs XSHRSAVEEV                                    3261  68    0 n
+    3262   1 fm                                               3263  44    0 n
+    3265   1 vr dpavev                                        3266  69    0 n
+    3267   1 eq DPARAVEV                                      3273  36    0 n
+    3275   1 eq UTILITELASTICEV                               3278  55    0 n
+    3280   1 eq PCONSEXPEV                                    3283  63    0 n
+    3285   1 eq GOVCONSEXPEV                                  3288  45    0 n
+    3290   1 eq SAVINGEV                                      3293  49    0 n
+    3295   1 eq SAVEUEV                                       3298  28    0 n
+    3304   1 cs UTILELASEV                                    3306  64    0 n
+    3307   1 fm                                               3308  32    0 n
+    3309   1 ud UTILELASEV           ap                       3310  31    0 n
+    3312   1 eq INCOME_EQUIV                                  3320  52    0 n
+    3327   1 vr EV                                            3328  49    0 n
+    3329   1 eq EVREG                                         3332  41    0 n
+    3334   1 vr WEV                                           3335  47    0 n
+    3336   1 eq EVWLD                                         3338  28    0 n
+    3347   1 cs EVSCALFACT                                    3348  58    0 n
+    3349   1 fm                                               3350  78    0 n
+    3352   1 cs VTMD                                          3353  62    0 n
+    3354   1 fm                                               3355  62    0 n
+    3357   1 vr EV_ALT                                        3358  58    0 n
+    3359   1 eq EV_DECOMPOSITION                              3396  38    0 n
+    3398   1 vr WEV_ALT                                       3399  63    0 n
+    3400   1 eq WORLDEV                                       3402  36    0 n
+    3404   1 vr CNTdpar                                       3405  75    0 n
+    3406   1 eq CNT_WEV_dpar                                  3412  75    0 n
+    3414   1 vr CNTpopr                                       3415  74    0 n
+    3416   1 eq CONT_EV_pop                                   3418  45    0 n
+    3420   1 vr CNTqor                                        3421  67    0 n
+    3422   1 eq CONT_EV_qor                                   3426  67    0 n
+    3428   1 vr CNTqoir                                       3430  73    0 n
+    3431   1 eq CONT_EV_qoir                                  3433  75    0 n
+    3435   1 vr CNTqfer                                       3437  77    0 n
+    3438   1 eq CONT_EV_qfer                                  3442  75    0 n
+    3444   1 vr CNTqfeir                                      3446  77    0 n
+    3447   1 eq CONT_EV_qfeir                                 3451  74    0 n
+    3453   1 vr CNTqfeijr                                     3455  73    0 n
+    3456   1 eq CONT_EV_qfeijr                                3459  71    0 n
+    3461   1 vr CNTqfmr                                       3463  77    0 n
+    3464   1 eq CONT_EV_qfmr                                  3468  76    0 n
+    3470   1 vr CNTqfmir                                      3472  74    0 n
+    3473   1 eq CONT_EV_qfmir                                 3477  75    0 n
+    3479   1 vr CNTqfmijr                                     3481  77    0 n
+    3482   1 eq CONT_EV_qfmijr                                3485  72    0 n
+    3487   1 vr CNTqfdr                                       3489  77    0 n
+    3490   1 eq CONT_EV_qfdr                                  3494  76    0 n
+    3496   1 vr CNTqfdir                                      3498  76    0 n
+    3499   1 eq CONT_EV_qfdir                                 3503  75    0 n
+    3505   1 vr CNTqfdijr                                     3507  77    0 n
+    3508   1 eq CONT_EV_qfdijr                                3511  72    0 n
+    3513   1 vr CNTqpmr                                       3515  76    0 n
+    3516   1 eq CONT_EV_qpmr                                  3520  71    0 n
+    3522   1 vr CNTqpmir                                      3524  75    0 n
+    3525   1 eq CONT_EV_qpmir                                 3527  78    0 n
+    3529   1 vr CNTqpdr                                       3531  76    0 n
+    3532   1 eq CONT_EV_qpdr                                  3536  71    0 n
+    3538   1 vr CNTqpdir                                      3540  75    0 n
+    3541   1 eq CONT_EV_qpdir                                 3543  78    0 n
+    3545   1 vr CNTqgmr                                       3547  73    0 n
+    3548   1 eq CONT_EV_qgmr                                  3552  71    0 n
+    3554   1 vr CNTqgmir                                      3556  74    0 n
+    3557   1 eq CONT_EV_qgmir                                 3559  78    0 n
+    3561   1 vr CNTqgdr                                       3563  75    0 n
+    3564   1 eq CONT_EV_qgdr                                  3568  71    0 n
+    3570   1 vr CNTqgdir                                      3572  76    0 n
+    3573   1 eq CONT_EV_qgdir                                 3575  78    0 n
+    3577   1 vr CNTqxsr                                       3579  79    0 n
+    3580   1 eq CONT_EV_qxsr                                  3584  76    0 n
+    3586   1 vr CNTqxsirs                                     3588  69    0 n
+    3589   1 eq CONT_EV_qxsirs                                3592  72    0 n
+    3594   1 vr CNTqimr                                       3596  79    0 n
+    3597   1 eq CONT_EV_qimr                                  3601  75    0 n
+    3603   1 vr CNTqimisr                                     3605  69    0 n
+    3606   1 eq CONT_EV_qimisr                                3609  71    0 n
+    3611   1 vr CNTalleffr                                    3612  78    0 n
+    3613   1 eq CONT_EV_alleffr                               3630  55    0 n
+    3632   1 vr CNTalleffir                                   3634  64    0 n
+    3635   1 eq CONT_EV_alleffir_E                            3640  69    0 n
+    3641   1 eq CONT_EV_alleffir_T                            3653  63    0 n
+    3655   1 vr CNTtotr                                       3657  69    0 n
+    3658   1 eq CONT_EV_totr                                  3665  62    0 n
+    3667   1 vr CNTcgdsr                                      3668  80    0 n
+    3669   1 eq CNT_EV_cgdsr                                  3673  76    0 n
+    3675   1 vr CNTendwr                                      3676  76    0 n
+    3677   1 eq CONT_EV_endwr                                 3682  42    0 n
+    3684   1 vr CNTendwir                                     3685  77    0 n
+    3686   1 eq CONT_EV_endwir                                3688  78    0 n
+    3690   1 vr CNTtechr                                      3691  72    0 n
+    3692   1 eq CONT_EV_techr                                 3703  70    0 n
+    3705   1 vr CNTtech_aor                                   3707  74    0 n
+    3708   1 eq CONT_EV_tech_aor                              3711  72    0 n
+    3713   1 vr CNTtech_aoir                                  3715  77    0 n
+    3716   1 eq CONT_EV_tech_aoir                             3718  68    0 n
+    3720   1 vr CNTtech_afer                                  3722  77    0 n
+    3723   1 eq CONT_EV_tech_afer                             3727  70    0 n
+    3729   1 vr CNTtech_afeijr                                3731  75    0 n
+    3732   1 eq CONT_EV_tech_afeijr                           3734  77    0 n
+    3736   1 vr CNTtech_avar                                  3738  74    0 n
+    3739   1 eq CONT_EV_tech_avar                             3742  73    0 n
+    3744   1 vr CNTtech_avajr                                 3746  70    0 n
+    3747   1 eq CONT_EV_tech_avajr                            3749  70    0 n
+    3751   1 vr CNTtech_afr                                   3753  72    0 n
+    3754   1 eq CONT_EV_tech_afr                              3759  54    0 n
+    3761   1 vr CNTtech_afijr                                 3763  76    0 n
+    3764   1 eq CONT_EV_tech_afijr                            3767  75    0 n
+    3769   1 vr CNTtech_atrr                                  3771  74    0 n
+    3772   1 eq CONT_EV_tech_atrr                             3777  49    0 n
+    3779   1 vr CNTtech_afmfdsd                               3781  64    0 n
+    3782   1 eq CONT_EV_tech_afmfdsd                          3785  69    0 n
+    3787   1 vr CNTtech_amsr                                  3788  79    0 n
+    3789   1 eq CONT_EV_tech_amsr                             3793  65    0 n
+    3795   1 vr CNTtech_amsirs                                3797  76    0 n
+    3798   1 eq CONT_EV_tech_amsirs                           3800  78    0 n
+    3802   1 vr CNTkbr                                        3804  77    0 n
+    3805   1 eq CONT_EV_kbr                                   3807  70    0 n
+    3818   1 cs SX_IR                                         3819  59    0 n
+    3820   1 fm                                               3824  42    0 n
+    3825   1 fm                                               3829  42    0 n
+    3831   1 cs VTICOMM                                       3832  70    0 n
+    3833   1 fm                                               3834  65    0 n
+    3836   1 cs VIWDIRALL                                     3837  78    0 n
+    3838   1 fm                                               3839  60    0 n
+    3840   1 fm                                               3841  45    0 n
+    3843   1 cs VIWDATOT                                      3844  80    0 n
+    3845   1 fm                                               3846  51    0 n
+    3848   1 cs SM_IR                                         3849  60    0 n
+    3850   1 fm                                               3851  46    0 n
+    3853   1 zd                                               3853  36    0 n
+    3854   1 cs SX_IRS                                        3855  68    0 n
+    3856   1 fm                                               3857  71    0 n
+    3858   1 fm                                               3859  58    0 n
+    3860   1 zd                                               3860  30    0 n
+    3862   1 cs SXT_IR                                        3863  72    0 n
+    3864   1 fm                                               3865  66    0 n
+    3867   1 vr px_ir                                         3868  62    0 n
+    3869   1 eq EXPPRICE_MARG                                 3873  74    0 n
+    3874   1 eq EXPPRICE_NMRG                                 3877  57    0 n
+    3879   1 cs SM_IRS                                        3880  77    0 n
+    3881   1 fm                                               3882  49    0 n
+    3884   1 cs SMT_IR                                        3885  75    0 n
+    3886   1 fm                                               3887  48    0 n
+    3889   1 vr pm_ir                                         3890  63    0 n
+    3891   1 eq IMPPRICE1_MARG                                3895  72    0 n
+    3896   1 eq IMPPRICE1_NMRG                                3899  57    0 n
+    3901   1 cs SW_IR                                         3902  71    0 n
+    3903   1 fm                                               3906  57    0 n
+    3907   1 fm                                               3909  72    0 n
+    3911   1 vr px_i                                          3912  57    0 n
+    3913   1 eq WRLDPRICEi                                    3916  50    0 n
+    3918   1 cs SW_I                                          3919  53    0 n
+    3920   1 fm                                               3924  54    0 n
+    3925   1 fm                                               3929  54    0 n
+    3931   1 vr px_                                           3932  57    0 n
+    3933   1 eq WRLDPRICE                                     3935  46    0 n
+    3937   1 vr c1_ir                                         3938  61    0 n
+    3939   1 eq c1_irEQ                                       3942  61    0 n
+    3944   1 vr c2_ir                                         3945  72    0 n
+    3946   1 eq c2_irEQ                                       3949  53    0 n
+    3951   1 vr c3_ir                                         3952  72    0 n
+    3953   1 eq c3_irEQ                                       3956  53    0 n
+    3958   1 vr c1_r                                          3959  66    0 n
+    3960   1 eq c1_rEQ                                        3963  43    0 n
+    3965   1 vr c2_r                                          3966  62    0 n
+    3967   1 eq c2_rEQ                                        3970  43    0 n
+    3972   1 vr c3_r                                          3973  62    0 n
+    3974   1 eq c3_rEQ                                        3977  43    0 n
+    3979   1 vr tot2                                          3980  67    0 n
+    3981   1 eq TOT2eq                                        3984  42    0 n
+      -1   0 cs C00171                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00172                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00173                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00174                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00175                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00176                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00177                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00178                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00179                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00180                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00181                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00182                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00183                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00184                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00185                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00186                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00187                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00188                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00189                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00190                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00191                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00192                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00193                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00194                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00195                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00196                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00197                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00198                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00199                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00200                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00201                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00202                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00203                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00204                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00205                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00206                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00207                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00208                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00209                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00210                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00211                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00212                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00213                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00214                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00215                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00216                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00217                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00218                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00219                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00220                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00221                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00222                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00223                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00224                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00225                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00226                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00227                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00228                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00229                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00230                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00231                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00232                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00233                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00234                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00235                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00236                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00237                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00238                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00239                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00240                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00241                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00242                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00243                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00244                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00245                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00246                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00247                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00248                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00249                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00250                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00251                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00252                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00253                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00254                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00255                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00256                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00257                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00258                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00259                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00260                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00261                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00262                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00263                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00264                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00265                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00266                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00267                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00268                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00269                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00270                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00271                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00272                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00273                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00274                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00275                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00276                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00277                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00278                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00279                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00280                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00281                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00282                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00283                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00284                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00285                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00286                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00287                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00288                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00289                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00290                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00291                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00292                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00293                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00294                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00295                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00296                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00297                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00298                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00299                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00300                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00301                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00302                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00303                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00304                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00305                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00306                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00307                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00308                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00309                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00310                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00311                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00312                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00313                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00314                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00315                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00316                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00317                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00318                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00319                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00320                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00321                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00322                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00323                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00324                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00325                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00326                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00327                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00328                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00329                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00330                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00331                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00332                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00333                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00334                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00335                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 cs C00336                                           0   0    0 n
+      -1   0 fm                                                  0   0    0 n
+      -1   0 en                                                  0   0    0 n
+#GPVER
+  121003
+#PRVER
+    7000
+#FINAL_LEVEL
+ ln c psave
+ ln c qsave
+ ln b pgd
+ ol c qgd             VDGM
+ ol c pm              1.0
+ ln b pgm
+ ol b qgm             VIGM
+ ol c pim             1.0
+ ln b ppd
+ ol c qpd             VDPM
+ ln b ppm
+ ol b qpm             VIPM
+ ln c ps
+ ol c qo              VOM
+ ln c pfe
+ ol b qfe             VFM
+ ln b pfd
+ ol c qfd             VDFM
+ ln b pfm
+ ol b qfm             VIFM
+ ln c pmes
+ ln c kb
+ ln c pcgds
+ ln b pms
+ ol c qxs             VXMD
+ ln b pcif
+ ln b pfob
+ ol c qst             VST
+ ln c y
+ ln c pop
+ ln c qoes
+ ln c endwslack
+ ln c pgov
+ ln c yg
+ ln c ug
+ ln c ppriv
+ ln c uepriv
+ ln c yp
+ ln c up
+ ln c to
+ ol c qim             VIM
+ ln c globalcgds
+ ln c pcgdswld
+ ln c del_taxrgc
+ ln c del_taxrpc
+ ln c del_taxriu
+ ln c del_taxrfu
+ ln c del_taxrout
+ ln c del_taxrexp
+ ln c del_taxrimp
+ ln c del_taxrinc
+ ln b pg
+ ln c qg
+ ln o tgd
+ ln o tgm
+ ln c pp
+ ln c qp
+ ln c tp
+ ol o tpd             LevTPD
+ ln c atpd
+ ln o tpm
+ ln c atpm
+ ln b pva
+ ln b qva
+ ln b pf
+ ln b qf
+ ln b ao
+ ln c ava
+ ln b af
+ ln b afe
+ ln c ams
+ ln c aosec
+ ln c aoreg
+ ln c aoall
+ ln c avasec
+ ln c avareg
+ ln o avaall
+ ln c afcom
+ ln c afsec
+ ln c afreg
+ ln c afall
+ ln o tfd
+ ln o tfm
+ ln o tf
+ ln c afecom
+ ln c afesec
+ ln c afereg
+ ln c afeall
+ ln c profitslack
+ ln c rental
+ ln c ke
+ ln c rore
+ ln c rorc
+ ln c qcgds
+ ln c ksvces
+ ln c EXPAND
+ ln c rorg
+ ln c cgdslack
+ ln c psaveslack
+ ln c tx
+ ln c txs
+ ln c tm
+ ln c tms
+ ol c pr              1.0
+ ln b qtmfsd
+ ln b atmfsd
+ ln c atm
+ ln c atf
+ ln c ats
+ ln c atd
+ ln o atall
+ ln b ptrans
+ ln c qtm
+ ln c pt
+ ln c uelas
+ ln c dppriv
+ ln c dpgov
+ ln c dpsave
+ ln c fincome
+ ln c del_indtaxr
+ ln c del_ttaxr
+ ln c incomeslack
+ ln c dpav
+ ln c p
+ ln c au
+ ln c dpsum
+ ln c u
+ ol c qds             VDM
+ ln c tradslack
+ ln c walras_sup
+ ln c walras_dem
+ ln c walraslack
+ ln c vxwfob
+ ln c viwcif
+ ln c vxwreg
+ ln c viwreg
+ ol c pfactreal       1.0
+ ol c pfactor         1.0
+ ol c pfactwld        1.0
+ ol c psw             1.0
+ ol c pdw             1.0
+ ol c tot             1.0
+ ln c vgdp
+ ol c pgdp            1.0
+ ol c qgdp            GDP
+ ln b compvalad
+ ol c pxw             1.0
+ ln c vxwcom
+ ln c vxwwld
+ ln c viwcom
+ ln c valuew
+ ln c valuewu
+ ol c pxwreg          1.0
+ ol c pxwcom          1.0
+ ol c pxwwld          1.0
+ ln c piw
+ ol c piwreg          1.0
+ ol c piwcom          1.0
+ ln c pw
+ ol c pwu             1.0
+ ol c qxw             VXW
+ ol c qxwreg          VXWREGION
+ ol c qxwcom          VXWCOMMOD
+ ol c qxwwld          VXWLD
+ ln c qiw
+ ol c qiwreg          VIWREGION
+ ol c qiwcom          VIWCOMMOD
+ ln c qow
+ ol c qowu            VWOU
+ ln c DTBALi
+ ln c DTBAL
+ ln c DTBALR
+ ln c uelasev
+ ln c ueprivev
+ ln c ugev
+ ln c upev
+ ln c qsaveev
+ ln c yev
+ ln c ypev
+ ln c ygev
+ ln c qpev
+ ln c ysaveev
+ ln c dpavev
+ ln c EV
+ ln c WEV
+ ln c EV_ALT
+ ln c WEV_ALT
+ ln c CNTdpar
+ ln c CNTpopr
+ ln b CNTqor
+ ln b CNTqoir
+ ln b CNTqfer
+ ln b CNTqfeir
+ ln b CNTqfeijr
+ ln b CNTqfmr
+ ln b CNTqfmir
+ ln b CNTqfmijr
+ ln b CNTqfdr
+ ln b CNTqfdir
+ ln b CNTqfdijr
+ ln b CNTqpmr
+ ln b CNTqpmir
+ ln b CNTqpdr
+ ln b CNTqpdir
+ ln b CNTqgmr
+ ln b CNTqgmir
+ ln b CNTqgdr
+ ln b CNTqgdir
+ ln b CNTqxsr
+ ln b CNTqxsirs
+ ln c CNTqimr
+ ln b CNTqimisr
+ ln b CNTalleffr
+ ln c CNTalleffir
+ ln b CNTtotr
+ ln c CNTcgdsr
+ ln c CNTendwr
+ ln c CNTendwir
+ ln c CNTtechr
+ ln c CNTtech_aor
+ ln b CNTtech_aoir
+ ln c CNTtech_afer
+ ln b CNTtech_afeijr
+ ln c CNTtech_avar
+ ln b CNTtech_avajr
+ ln c CNTtech_afr
+ ln b CNTtech_afijr
+ ln c CNTtech_atrr
+ ln b CNTtech_afmfdsd
+ ln c CNTtech_amsr
+ ln b CNTtech_amsirs
+ ln c CNTkbr
+ ln c px_ir
+ ln c pm_ir
+ ln c px_i
+ ln c px_
+ ln c c1_ir
+ ln c c2_ir
+ ln c c3_ir
+ ln c c1_r
+ ln c c2_r
+ ln c c3_r
+ ln c tot2
+#CSPSIM
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+nnnnnnnnnnnnnnnn

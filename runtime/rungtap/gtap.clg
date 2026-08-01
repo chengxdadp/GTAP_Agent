@@ -1,0 +1,14 @@
+Exogenous
+          pop
+          psaveslack pfactwld
+          profitslack incomeslack endwslack
+          cgdslack tradslack
+          ams atm atf ats atd
+          aosec aoreg avasec avareg
+          afcom afsec afreg afecom afesec afereg
+          aoall afall afeall
+          au dppriv dpgov dpsave
+          to tp tm tms tx txs
+          qo(ENDW_COMM,REG) ;
+Rest Endogenous ;
+

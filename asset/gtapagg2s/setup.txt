@@ -1,0 +1,15 @@
+This setup program installs GTAPAgg2 to your hard disk and
+places shortcuts to the GTAPAgg2 program on your desktop
+and on the Start Menu.
+
+GTAPAgg2 allows you to create databases for the GTAP model
+from Versions 8 upwards of the GTAP data base. It requires
+Windows XP or later version of Windows.
+
+A licence (purchased from GTAP) is required. After
+installing the program, you need to place the licence file
+(GTAPAgg.lic) into the same folder as the GTAPAgg2.exe
+program file.
+
+When you first start GTAPAgg2, please spend a little time
+looking through the on-line help.

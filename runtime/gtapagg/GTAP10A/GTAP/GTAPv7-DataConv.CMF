@@ -1,0 +1,12 @@
+auxiliary files = GTAPv7-DataConv;
+check-on-read elements = warn;
+log file = yes;  ! Optional
+
+! Input files: aggregation based on GTAP 10
+File DatFile = output\basedata.har; ! File containing all base data 
+File SETS    = output\sets.har;     ! File with set specification
+File ParmFile= output\default.prm;  ! File containing behavioral prameters    
+! Output files with sector-specific factor
+File NEWDATA = output\GTAPv7\basedata.har; ! File containing all base data 
+File NEWSETS = output\GTAPv7\sets.har;     ! File with set specification  
+File NewPARM = output\GTAPv7\default.prm;  ! File containing behavioral prameters

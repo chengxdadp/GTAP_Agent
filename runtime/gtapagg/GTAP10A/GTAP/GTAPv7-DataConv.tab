@@ -1,0 +1,674 @@
+!===============================================================================
+                          --------------------
+                          GTAPDv7-DataConv.tab 
+                          --------------------
+Description: GTAPv9A post processing job for GTAP model v7 (i.e., GTAP facelift)
+(1) Rename flows from Agents (A), Market (M), World (W)  
+                   to Basic (B), Producers (P) 
+(2) Rename set headers 
+(3) Add headers for elasticity parameters  
+
+Created:  28 November 2016
+Modified:  19 July 2018  
+===============================================================================!
+
+File
+ SETS           # Original Sets file  #;
+ DATFILE        # Initial data - Basedata.har #;
+ PARMFILE       # Initial parameter file  #;       
+ (new) NewDATA # Output data file for GTAP model facelift #;
+ (new) NewSETS # New sets file  #;
+ (new) NewPARM # New parameter file  #;
+
+!<
+ -------------------------------
+ A. Set Definitions (Old format)  
+ -------------------------------
+>!
+Set
+ REG        # Regions               # read elements from file SETS header "H1";
+ SEC        # Sectors               # read elements from file SETS header "H2"; 
+ TRAD_COMM0 # Traded commodities    # = SEC;
+ PROD_COMM  # Produced commodities  # = SEC + "cgds";
+ ENDW_COMM  # Endowments            # read elements from file SETS header "H6"; 
+ MARG_COMM0 # Margin commodities    # read elements from file SETS header "MARG";
+ DIR        # Domestic vs. Imported # (Domestic, Imported);
+Set 
+ TARTYPE    # Tariff types # (ADV, SPE);
+
+!< 
+--------------------------------
+B. Database headers (Old format)     
+--------------------------------
+>!
+Coefficient
+ DVER # format of GTAP Data #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) ADRV0(c,s,d) # anti-dumping duty #;
+(all,r,REG) DPSM(r)
+ # sum of distribution parameters in household demand system #;
+(all,e,ENDW_COMM)(all,p,PROD_COMM)(all,r,REG) EVFA0(e,p,r)
+ # primary factor purchases, at agents' prices #;
+(all,e,ENDW_COMM)(all,r,REG) EVOA(e,r)
+ # primary factor sales, at agents' prices #;
+(all,e,ENDW_COMM)(all,p,PROD_COMM)(all,r,REG) FBEP0(e,p,r)
+ # gross factor-based subsidies #;
+(all,e,ENDW_COMM)(all,p,PROD_COMM)(all,r,REG) FTRV0(e,p,r)
+ # gross factor employment tax revenue #;
+(all,c,TRAD_COMM0)(all,p,PROD_COMM)(all,r,REG)(all,d,DIR) ISEP0(c,p,r,d)
+ # net intermediate input subsidies #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) MFRV0(c,s,d)
+ # export tax equivalent of MFA quota premia #;
+(all,c,TRAD_COMM0)(all,r,REG) OSEP0(c,r) # net ordinary output subsidy #;
+(all,r,REG) POP(r) # population #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) PURV0(c,s,d)
+ # export tax equivalent of price undertakings #;
+(all,r,REG) SAVE(r) # net saving, by region #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) TFRV0(c,s,d)
+ # ordinary import duty #;
+(all,c,TRAD_COMM0)(all,r,REG) TVOM(c,r)
+ # sales of domestic production, at market prices #;
+(all,r,REG) VDEP(r) # capital depreciation #;
+(all,c,TRAD_COMM0)(all,p,PROD_COMM)(all,r,REG) VDFA0(c,p,r)
+ # domestic purchases, by firms, at agents' prices #;
+(all,c,TRAD_COMM0)(all,p,PROD_COMM)(all,r,REG) VDFM0(c,p,r)
+ # domestic purchases, by firms, at market prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VDGA(c,r)
+ # domestic purchases, by government, at agents' prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VDGM(c,r)
+ # domestic purchases, by government, at market prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VDPA(c,r)
+ # domestic purchases, by households, at agents' prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VDPM(c,r)
+ # domestic purchases, by households, at market prices #;
+(all,e,ENDW_COMM)(all,p,PROD_COMM)(all,r,REG) VFM0(e,p,r)
+ # primary factor purchases, by firms, at market prices #;
+(all,c,TRAD_COMM0)(all,p,PROD_COMM)(all,r,REG) VIFA0(c,p,r)
+ # import purchases, by firms, at agents' prices #;
+(all,c,TRAD_COMM0)(all,p,PROD_COMM)(all,r,REG) VIFM0(c,p,r)
+ # import purchases, by firms, at market prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VIGA(c,r)
+ # import purchases, by government, at agents' prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VIGM(c,r)
+ # import purchases, by government, at market prices #;
+(all,c,TRAD_COMM0)(all,r,REG)(all,a,REG) VIMS(c,r,a)
+ # imports, at market prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VIPA(c,r)
+ # import purchases, by households, at agents' prices #;
+(all,c,TRAD_COMM0)(all,r,REG) VIPM(c,r)
+ # import purchases, by households, at market prices #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VIWS(c,s,d)
+ # imports, at world prices #;
+(all,r,REG) VKB(r) # capital stock #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VRRV0(c,s,d)
+ # export tax equivalent of voluntary export restraints #;
+(all,m,MARG_COMM0)(all,r,REG) VST0(m,r) # margin exports #;
+(all,t,TARTYPE)(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VTSS0(t,c,s,d)
+ # import tariff Rev by type of tariffs paid #;
+(all,m,MARG_COMM0)(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VTWR0(m,c,s,d)
+ # margins by margin commodity #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VXMD(c,s,d)
+ # non-margin exports, at market prices #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) VXWD(c,s,d)
+ # non-margin exports, at world prices #;
+(all,c,TRAD_COMM0)(all,s,REG)(all,d,REG) XTRV0(c,s,d) # ordinary export tax #;
+
+Read
+ DVER   from file DatFile header "DVER";
+ ADRV0  from file DatFile header "ADRV";
+ DPSM   from file DatFile header "DPSM";
+ EVFA0  from file DatFile header "EVFA";
+ EVOA   from file DatFile header "EVOA";
+ FBEP0  from file DatFile header "FBEP";
+ FTRV0  from file DatFile header "FTRV";
+ ISEP0  from file DatFile header "ISEP";
+ MFRV0  from file DatFile header "MFRV";
+ OSEP0  from file DatFile header "OSEP";
+ POP    from file DatFile header "POP ";
+ PURV0  from file DatFile header "PURV";
+ SAVE   from file DatFile header "SAVE";
+ TFRV0  from file DatFile header "TFRV";
+ VDEP   from file DatFile header "VDEP";
+ VDFA0  from file DatFile header "VDFA";
+ VDFM0  from file DatFile header "VDFM";
+ VDGA   from file DatFile header "VDGA";
+ VDGM   from file DatFile header "VDGM";
+ VDPA   from file DatFile header "VDPA";
+ VDPM   from file DatFile header "VDPM";
+ VFM0   from file DatFile header "VFM ";
+ VIFA0  from file DatFile header "VIFA";
+ VIFM0  from file DatFile header "VIFM";
+ VIGA   from file DatFile header "VIGA";
+ VIGM   from file DatFile header "VIGM";
+ VIMS   from file DatFile header "VIMS";
+ VIPA   from file DatFile header "VIPA";
+ VIPM   from file DatFile header "VIPM";
+ VIWS   from file DatFile header "VIWS";
+ VKB    from file DatFile header "VKB ";
+ VRRV0  from file DatFile header "VRRV";
+ VST0   from file DatFile header "VST ";
+ VTSS0  from file DatFile header "VTSS";
+ VTWR0  from file DatFile header "VTWR";
+ VXMD   from file DatFile header "VXMD";
+ VXWD   from file DatFile header "VXWD";
+ XTRV0  from file DatFile header "XTRV";
+(ifheaderexists)TVOM from file DatFile header "TVOM";
+
+!<  
+ -----------------
+ C. Set Definition     
+ -----------------
+>!
+Set PRODSEC # PROD_COMM excluding "cgds" # = SEC;
+Subset SEC is subset of PRODSEC;
+Set
+ COMM = SEC;
+ ACTS = SEC;
+ MARG = MARG_COMM0;
+Set ENDW = ENDW_COMM;
+
+!<  
+ ----------------------
+ D. Old names, new sets     
+ ----------------------
+>!
+
+Coefficient
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) EVFA(e,a,r)
+ # primary factor purchases, at agents' prices #;
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) FBEP(e,a,r)
+ # gross factor-based subsidies #;
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) FTRV(e,a,r)
+ # gross factor employment tax revenue #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR) CSEP(c,a,r,d)
+ # net intermediate input subsidies #;
+(all,c,COMM)(all,r,REG)(all,d,DIR) ISEP(c,r,d)
+ # net investment input subsidies #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFA(c,a,r)
+ # domestic purchases, by firms, at agents' prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFM(c,a,r)
+ # domestic purchases, by firms, at market prices #;
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) VFM(e,a,r)
+ # primary factor purchases, by firms, at market prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VIFA(c,a,r)
+ # import purchases, by firms, at agents' prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VIFM(c,a,r)
+ # import purchases, by firms, at market prices #;
+! Margin commodities !
+(all,m,MARG)(all,r,REG) VST(m,r) # margin exports #;
+(all,m,MARG)(all,c,COMM)(all,s,REG)(all,d,REG) VTWR(m,c,s,d)
+ # margins by margin commodity #;
+! Investment agent !
+(all,c,COMM)(all,r,REG) VDIA(c,r)
+ # domestic purchases, by investment, at agents' prices #;
+(all,c,COMM)(all,r,REG) VDIM(c,r)
+ # domestic purchases, by investment, at market prices #;
+(all,c,COMM)(all,r,REG) VIIA(c,r)
+ # import purchases, by investment, at agents' prices #;
+(all,c,COMM)(all,r,REG) VIIM(c,r)
+ # import purchases, by investment, at market prices #;
+! Tax revenues !
+(all,c,COMM)(all,s,REG)(all,d,REG) ADRV(c,s,d) # anti-dumping duty #;
+(all,c,COMM)(all,s,REG)(all,d,REG) MFRV(c,s,d)
+ # export tax equivalent of MFA quota premia #;
+(all,c,COMM)(all,r,REG) OSEP(c,r) # net ordinary output subsidy #;
+(all,c,COMM)(all,s,REG)(all,d,REG) PURV(c,s,d) ;
+(all,c,COMM)(all,s,REG)(all,d,REG) TFRV(c,s,d) # ordinary import duty #;
+(all,c,COMM)(all,s,REG)(all,d,REG) VRRV(c,s,d)
+ # export tax equivalent of voluntary export restraints #;
+(all,t,TARTYPE)(all,c,COMM)(all,s,REG)(all,d,REG) VMRT(t,c,s,d)
+ # Import tariff Rev by type of tariffs paid #;
+(all,c,COMM)(all,s,REG)(all,d,REG) XTRV(c,s,d) # ordinary export tax #;
+
+!<  
+ ------------------
+ E. Data assignment       
+ ------------------
+>!
+Mapping PROD2ACTS from ACTS to PROD_COMM;
+Formula (all,j,ACTS) PROD2ACTS(j)=$POS(j);
+Mapping OCOM2NCOM from COMM to TRAD_COMM0;
+Formula (all,c,COMM) OCom2NCOM(c)=$POS(c);
+Mapping MARG2NMARG from MARG to MARG_COMM0;
+Formula (all,m,MARG) MARG2NMARG(m)=$POS(m);
+
+Formula
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) 
+    EVFA(e,a,r)   = EVFA0(e,PROD2ACTS(a),r);
+
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) 
+    FBEP(e,a,r)   = FBEP0(e,PROD2ACTS(a),r)*-1.0;
+
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) 
+    FTRV(e,a,r)   = FTRV0(e,PROD2ACTS(a),r);
+
+(all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR) 
+    CSEP(c,a,r,d) = ISEP0(OCom2NCOM(c),PROD2ACTS(a),r,d)*-1.0;
+
+(all,c,COMM)(all,r,REG)(all,d,DIR) 
+    ISEP(c,r,d) = ISEP0(OCom2NCOM(c),"cgds",r,d)*-1.0;
+
+(all,c,COMM)(all,a,ACTS)(all,r,REG) 
+    VDFA(c,a,r)   = VDFA0(OCom2NCOM(c),PROD2ACTS(a),r);
+
+(all,c,COMM)(all,a,ACTS)(all,r,REG) 
+    VDFM(c,a,r)   = VDFM0(OCom2NCOM(c),PROD2ACTS(a),r);
+
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) 
+    VFM(e,a,r)    = VFM0(e,PROD2ACTS(a),r);
+
+(all,c,COMM)(all,a,ACTS)(all,r,REG) 
+    VIFA(c,a,r)   = VIFA0(OCom2NCOM(c),PROD2ACTS(a),r);
+
+(all,c,COMM)(all,a,ACTS)(all,r,REG) 
+    VIFM(c,a,r)   = VIFM0(OCom2NCOM(c),PROD2ACTS(a),r);
+
+Formula ! Domestic and imported purchases by investment agent !
+(all,c,COMM)(all,r,REG) 
+    VDIA(c,r) = VDFA0(OCom2NCOM(c),"cgds",r);
+
+(all,c,COMM)(all,r,REG) 
+    VDIM(c,r) = VDFM0(OCom2NCOM(c),"cgds",r);
+
+(all,c,COMM)(all,r,REG) 
+    VIIA(c,r) = VIFA0(OCom2NCOM(c),"cgds",r);
+
+(all,c,COMM)(all,r,REG) 
+    VIIM(c,r) = VIFM0(OCom2NCOM(c),"cgds",r);
+
+Formula ! Margin commodities !
+(all,m,MARG)(all,r,REG) VST(m,r) = VST0(MARG2NMARG(m),r);
+(all,m,MARG)(all,c,COMM)(all,s,REG)(all,d,REG) 
+    VTWR(m,c,s,d) = VTWR0(MARG2NMARG(m),OCom2NCOM(c),s,d);
+
+Formula
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    ADRV(c,s,d) = ADRV0(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    MFRV(c,s,d) = MFRV0(OCom2NCOM(c),s,d);
+
+(all,c,COMM)(all,r,REG) 
+    OSEP(c,r)   = OSEP0(OCom2NCOM(c),r)*-1.0;
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    PURV(c,s,d) = PURV0(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    TFRV(c,s,d) = TFRV0(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    VRRV(c,s,d) = VRRV0(OCom2NCOM(c),s,d);
+(all,t,TARTYPE)(all,c,COMM)(all,s,REG)(all,d,REG) 
+    VMRT(t,c,s,d) = VTSS0(t,OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) 
+    XTRV(c,s,d) = XTRV0(OCom2NCOM(c),s,d);
+
+Coefficient (all,c,COMM)(all,r,REG)
+    VOM(c,r) # domestic sales of c in r at basic prices (tradeables only) #;
+Formula (all,c,COMM)(all,r,REG)
+    VOM(c,r) = VDPM(c,r) + VDGM(c,r) + VDIM(c,r) + sum{a,ACTS, VDFM(c,a,r)}
+               + sum{d,REG, VXMD(c,r,d)} + IF[c in MARG, VST(c,r)]; 
+
+!<  
+ ---------------------
+ F. Create Make matrix       
+ ---------------------
+>!
+Mapping PRODSEC2ACT from ACTS to PRODSEC;
+Formula (all,j,ACTS) PRODSEC2ACT(j)=$POS(j);
+
+Coefficient 
+(all,c,TRAD_COMM0)(all,a,PRODSEC)(all,r,REG) MAKE0(c,a,r) 
+    # multi-production (MAKE) matrix #;
+Formula (all,c,TRAD_COMM0)(all,a,PRODSEC)(all,r,REG) 
+    MAKE0(c,a,r) = 0.0; 
+Formula (all,s,SEC)(all,r,REG) 
+    MAKE0(s,s,r) = TVOM(s,r);
+Formula (all,s,SEC)(all,r,REG) 
+    MAKE0(s,s,r) = VOM(s,r);
+
+Coefficient 
+(all,c,COMM)(all,a,ACTS)(all,r,REG) MAKB(c,a,r) 
+    # 'MAKE' matrix at basic prices #;
+Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)  
+    MAKB(c,a,r) = MAKE0(OCom2NCOM(c),PRODSEC2ACT(a),r);
+
+! Add activity tax -- PTAX(c,a,r) in MAKE format !
+
+Set 
+ DEMD = TRAD_COMM0 + ENDW_COMM;
+Coefficient 
+(all,j,PRODSEC)(all,r,REG) VOA(j,r) 
+    # output of firm j in region r valued at producer's prices #;
+(all,d,DEMD)(all,j,PRODSEC)(all,r,REG)
+    VFP(d,j,r) # expenditure on d by firm j in r valued at producer's prices #;
+(all,c,TRAD_COMM0)(all,j,PRODSEC)(all,r,REG)
+    PTAX0(c,j,r) # Output tax imposed on firm j in r #;
+
+Formula 
+(all,e,ENDW)(all,j,PRODSEC)(all,r,REG) 
+    VFP(e,j,r) = EVFA0(e,j,r);
+(all,c,TRAD_COMM0)(all,j,PRODSEC)(all,r,REG) 
+    VFP(c,j,r) = VDFA0(c,j,r) + VIFA0(c,j,r);
+(all,j,PRODSEC)(all,r,REG) VOA(j,r) = sum{d,DEMD, VFP(d,j,r)};
+Formula (all,c,TRAD_COMM0)(all,j,PRODSEC)(all,r,REG)
+    PTAX0(c,j,r) = 0.0; 
+Formula (all,s,SEC)(all,r,REG)
+    PTAX0(s,s,r) = TVOM(s,r) - VOA(s,r);
+
+Coefficient
+(all,c,COMM)(all,a,ACTS)(all,r,REG)
+    PTAX(c,a,r) # activity tax on commodity c by activity j in r #;
+Formula 
+(all,c,COMM)(all,a,ACTS)(all,r,REG)  
+    PTAX(c,a,r) = PTAX0(OCom2NCOM(c),PRODSEC2ACT(a),r);
+
+Coefficient
+(all,c,COMM)(all,a,ACTS)(all,r,REG)
+    MAKS(c,a,r) # 'MAKE' matrix (before output tax/subsidy) #;
+Formula 
+(all,c,COMM)(all,a,ACTS)(all,r,REG)  
+    MAKS(c,a,r) = MAKB(c,a,r) - PTAX(c,a,r);
+
+!<  
+---------------------------------
+G. Rename coefficients for GTAPv7      
+---------------------------------
+Convention: Valuation changes
+    From        to
+   Market(M)  Basic(B)
+   Agent (A)  Producer(P)
+>!
+
+Coefficient
+! Government !
+(all,c,COMM)(all,r,REG) VDGP(c,r)                   ! old VDGA(c,r) !     
+    # domestic purchases, by government, at producer's prices #;
+(all,c,COMM)(all,r,REG) VDGB(c,r)                   ! old VDGM(c,r) !
+    # domestic purchases, by government, at basic prices #;
+(all,c,COMM)(all,r,REG) VMGP(c,r)                   ! old VIGA(c,r) ! 
+    # import purchases, by government, at producer's prices #;
+(all,c,COMM)(all,r,REG) VMGB(c,r)                   ! old  VIGM(c,r) ! 
+    # import purchases, by government, at basic prices #;
+! Private household !
+(all,c,COMM)(all,r,REG) VDPP(c,r)                   ! old VDPA(c,r) !
+    # domestic purchases, by households, at producer's prices #;
+(all,c,COMM)(all,r,REG) VDPB(c,r)                   ! old VDPM(c,r) !
+    # domestic purchases, by households, at basic prices #;
+(all,c,COMM)(all,r,REG) VMPP(c,r)                   ! old VIPA(c,r) !
+    # import purchases, by households, at producer's prices #;
+(all,c,COMM)(all,r,REG) VMPB(c,r)                   ! old VIPM(c,r) !
+    # import purchases, by households, at basic prices #;
+! Investment !
+(all,c,COMM)(all,r,REG) VDIP(c,r)                   ! old VDFA(c,"cgds",r) !
+    # domestic purchases, by investment, at producer's prices #;
+(all,c,COMM)(all,r,REG) VDIB(c,r)                   ! old VDFM(c,"cgds",r) !
+    # domestic purchases, by investment, at basic prices #;
+(all,c,COMM)(all,r,REG) VMIP(c,r)                   ! old VIFA(c,"cgds",r) !
+    # import purchases, by investment, at producer's prices #;
+(all,c,COMM)(all,r,REG) VMIB(c,r)                   ! old VIFM(c,"cgds",r) !
+    # import purchases, by investment, at basic prices #;
+! Firms !
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFP(c,a,r)     ! old VDFA(c,a,r) !
+    # domestic purchases, by firms, at producer's prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFB(c,a,r)     ! old VDFM(c,a,r) !
+    # domestic purchases, by firms, at basic prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VMFP(c,a,r)     ! old VIFA !
+    # imported purchases, by firms, at producer's prices #;
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VMFB(c,a,r)     ! old VIFM!
+    # imported purchases, by firms, at basic prices #;
+! Factors !
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) EVFP(e,a,r)     ! old EVFA(e,a,r) !
+    # primary factor purchases, at producer's prices #;
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) EVFB(e,a,r)     ! old VFM(e,a,r) !
+    # primary factor purchases, by firms, at basic prices #;
+(all,e,ENDW)(all,r,REG) EVOP0(e,r)                  ! old EVOA(e,r) !
+    # primary factor sales, net of direct tax #;
+(all,c,COMM)(all,s,REG)(all,d,REG) VMSB(c,s,d)      ! old VIMS(c,s,d) !
+    # imports, at basic prices #;
+(all,c,COMM)(all,s,REG)(all,d,REG) VCIF(c,s,d)      ! old VIWS(c,s,d) !
+    # imports, at CIF prices #;
+(all,c,COMM)(all,s,REG)(all,d,REG) VFOB(c,s,d)      ! old VXWD(c,s,d) !
+    # non-margin exports, at FOB prices #;
+(all,c,COMM)(all,s,REG)(all,d,REG) VXSB(c,s,d)      ! old VXMD(c,s,d) !
+    # non-margin exports, at basic prices #;
+
+Formula
+! Government !
+(all,c,COMM)(all,r,REG) VDGP(c,r) = VDGA(OCom2NCOM(c),r);    
+(all,c,COMM)(all,r,REG) VDGB(c,r) = VDGM(OCom2NCOM(c),r); 
+(all,c,COMM)(all,r,REG) VMGP(c,r) = VIGA(OCom2NCOM(c),r); 
+(all,c,COMM)(all,r,REG) VMGB(c,r) = VIGM(OCom2NCOM(c),r);  
+! Private household !
+(all,c,COMM)(all,r,REG) VDPP(c,r) = VDPA(OCom2NCOM(c),r);
+(all,c,COMM)(all,r,REG) VDPB(c,r) = VDPM(OCom2NCOM(c),r);
+(all,c,COMM)(all,r,REG) VMPP(c,r) = VIPA(OCom2NCOM(c),r);
+(all,c,COMM)(all,r,REG) VMPB(c,r) = VIPM(OCom2NCOM(c),r);
+! Investment !
+(all,c,COMM)(all,r,REG) VDIP(c,r) = VDIA(c,r);
+(all,c,COMM)(all,r,REG) VDIB(c,r) = VDIM(c,r);
+(all,c,COMM)(all,r,REG) VMIP(c,r) = VIIA(c,r);
+(all,c,COMM)(all,r,REG) VMIB(c,r) = VIIM(c,r); 
+! Firms !
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFP(c,a,r) = VDFA(c,a,r); 
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VDFB(c,a,r) = VDFM(c,a,r); 
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VMFP(c,a,r) = VIFA(c,a,r); 
+(all,c,COMM)(all,a,ACTS)(all,r,REG) VMFB(c,a,r) = VIFM(c,a,r); 
+! Factors !
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) EVFP(e,a,r) = EVFA(e,a,r);
+(all,e,ENDW)(all,a,ACTS)(all,r,REG) EVFB(e,a,r) = VFM(e,a,r);
+            (all,e,ENDW)(all,r,REG) EVOP0(e,r)  = EVOA(e,r);
+! Aggegate imports by commodity and source !
+(all,c,COMM)(all,s,REG)(all,d,REG) VMSB(c,s,d) = VIMS(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) VCIF(c,s,d) = VIWS(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) VFOB(c,s,d) = VXWD(OCom2NCOM(c),s,d);
+(all,c,COMM)(all,s,REG)(all,d,REG) VXSB(c,s,d) = VXMD(OCom2NCOM(c),s,d);
+
+! Endowment- and activity-specific income tax !
+Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG) EVJP(e,a,r) 
+    # value of endowment e in j in region r, net of direct tax #;
+Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG) 
+    EVJP(e,a,r) = EVOP0(e,r)*[EVFB(e,a,r)/sum{aa, ACTS, EVFB(e,aa,r)}];
+Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG) EVOS(e,a,r) 
+    # value of endowment supply in region r, net of direct tax #;
+Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)  
+    EVOS(e,a,r) = EVJP(e,a,r);  
+
+Formula
+ DVER = 6.0;
+TRANSFER (IfHeaderExists) 
+ "DREL" from file SETS to file NewDATA;
+Write
+ DVER to file NewDATA header "DVER";
+ DPSM to file NewDATA header "DPSM";
+ VDFB to file NewDATA header "VDFB"; ! VDFM !
+ VDFP to file NewDATA header "VDFP"; ! VDFA !
+ VDPP to file NewDATA header "VDPP"; ! VDPA !
+ VDPB to file NewDATA header "VDPB"; ! VDPM !
+ VDGP to file NewDATA header "VDGP"; ! VDGA !
+ VDGB to file NewDATA header "VDGB"; ! VDGM !
+ VDIP to file NewDATA header "VDIP"; ! VDIA !
+ VDIB to file NewDATA header "VDIB"; ! VDIM !
+ VMFP to file NewDATA header "VMFP"; ! VIFA !
+ VMFB to file NewDATA header "VMFB"; ! VIFM !
+ VMPP to file NewDATA header "VMPP"; ! VIPA !
+ VMPB to file NewDATA header "VMPB"; ! VIPM !
+ VMGP to file NewDATA header "VMGP"; ! VIGA !
+ VMGB to file NewDATA header "VMGB"; ! VIGM !
+ VMIP to file NewDATA header "VMIP"; ! VIIA !
+ VMIB to file NewDATA header "VMIB"; ! VIIM ! 
+ VFOB to file NewDATA header "VFOB"; ! VXWD !
+ VXSB to file NewDATA header "VXSB"; ! VXMD !
+ VCIF to file NewDATA header "VCIF"; ! VIWS!
+ VMSB to file NewDATA header "VMSB"; ! VIMS !
+ VRRV to file NewDATA header "VRRV";
+ VST  to file NewDATA header "VST ";
+ VTWR to file NewDATA header "VTWR";
+ MAKS to file NewDATA header "MAKS";
+ MAKB to file NewDATA header "MAKB";
+ VDEP to file NewDATA header "VDEP"; 
+ EVOS to file NewDATA header "EVOS";  
+ EVFP to file NewDATA header "EVFP"; 
+ EVFB to file NewDATA header "EVFB"; ! VFM  !
+ SAVE to file NewDATA header "SAVE";
+ VKB  to file NewDATA header "VKB ";
+ POP  to file NewDATA header "POP";
+ ADRV to file NewDATA header "ADRV";
+ CSEP to file NewDATA header "CSEP" 
+    longname "net intermediate input tax (if > 0) or subsidy (if < 0)";
+ FBEP to file NewDATA header "FBEP"
+    longname "gross factor-based tax (if > 0) or subsidy (if < 0)";
+ FTRV to file NewDATA header "FTRV";
+ ISEP to file NewDATA header "ISEP"
+    longname "net investment input tax (if > 0) or subsidy (if < 0)";
+ MFRV to file NewDATA header "MFRV";
+ OSEP to file NewDATA header "OSEP"
+     longname "net ordinary output tax (if > 0) or subsidy (if < 0)";
+ PTAX to file NewDATA header "PTAX"; 
+ PURV to file NewDATA header "PURV";
+ TFRV to file NewDATA header "TFRV";
+ VMRT to file NewDATA header "VMRT";
+ XTRV to file NewDATA header "XTRV";
+
+!<  
+  --------------------------------
+  H. Parameter file       
+  --------------------------------
+>!
+
+Coefficient
+(all,c,COMM)(all,r,REG) SUBPAR(c,r) # CDE substitution parameter #;
+(all,c,COMM)(all,r,REG) INCPAR(c,r) # CDE expansion parameter #;
+(all,a,PROD_COMM) ESUBT0(a) 
+ # Elasticity of subs among composite intermediate and factors at region level#;
+(all,e,ENDW) ETRAE0(e) # CET between sectors for sluggish primary factors#;
+(all,p,PROD_COMM) ESUBV0(p)
+ # CES between primary factors in production#;
+(all,c,TRAD_COMM0) ESUBD0(c)
+ # Armington CES for domestic/imported allocation#;
+(all,c,TRAD_COMM0) ESUBM0(c)
+ # Armington CES for regional allocation of imports#;
+(all,e,ENDW)(integer) SLUG(e) # flag, 1 for sluggish endowments, 0 for mobile #;
+
+Read
+ SUBPAR  from file ParmFile header "SUBP";
+ INCPAR  from file ParmFile header "INCP";
+ ESUBT0  from file ParmFile header "ESBT";
+ ETRAE0  from file ParmFile header "ETRE";
+ ESUBV0  from file ParmFile header "ESBV";
+ ESUBD0  from file ParmFile header "ESBD";
+ ESUBM0  from file ParmFile header "ESBM";
+ SLUG   from file ParmFile header "SLUG";
+
+!<  
+  ------------------------
+  I. Define endowment sets  
+  ------------------------
+>!
+Set ENDWF # Sector-specific endowment # 
+    = (all,e,ENDW: ABS[ETRAE0(e)] > 0 and ABS[ETRAE0(e)] <1 );
+Set ENDWS # Sluggish endowment # 
+    = (all,e,ENDW: SLUG(e) = 1 and ABS[ETRAE0(e)] >= 1 );
+Subset 
+ ENDWS is subset of ENDW;
+Set 
+ ENDWFS # Fixed and sluggish endowments # = ENDWF + ENDWS;
+Subset
+ ENDWF is subset of ENDW;
+ ENDWS is subset of ENDW;
+ ENDWFS is subset of ENDW;
+Set 
+ ENDWM # Mobile endowments # = ENDW - ENDWFS;
+ ENDWXF # non sector-specific endowments # = ENDW - ENDWF; 
+
+Set ENDWT # Endowment Type # (mobile, sluggish, fixed);
+Coefficient  (all,e,ENDW)(all,t,ENDWT) 
+ ENDOWFLAG(e,t) # binary (1,0) flag for endowment mobility #;
+Formula (all,e,ENDW)(all,t,ENDWT) ENDOWFLAG(e,t) = 0.0;
+Formula 
+ (all,e,ENDWM) ENDOWFLAG(e,"Mobile")   = 1.0;
+ (all,e,ENDWS) ENDOWFLAG(e,"sluggish") = 1.0;
+ (all,e,ENDWF) ENDOWFLAG(e,"fixed")    = 1.0;
+
+Coefficient
+(all,a,ACTS)(all,r,REG) ESUBT(a,r) 
+ # Elasticity of subs among composite intermediate and factors at region level#;
+(all,e,ENDW)(all,r,REG) ETRAE(e,r) 
+ # CET between sectors for sluggish primary factors #;
+(all,a,ACTS)(all,r,REG) ESUBVA(a,r)
+ # CES between primary factors in production at region level #;
+(all,c,COMM)(all,r,REG) ESUBD(c,r)
+ # Armington CES for domestic/imported allocation at region level #;
+(all,c,COMM)(all,r,REG) ESUBM(c,r)
+ # Armington CES for regional allocation of imports at region level #;
+
+Formula
+! Uniform parameter values !
+(all,a,ACTS)(all,r,REG) ESUBVA(a,r) = ESUBV0(PROD2ACTS(a));
+(all,c,COMM)(all,r,REG) ESUBD(c,r)  = ESUBD0(OCOM2NCOM(c));
+(all,c,COMM)(all,r,REG) ESUBM(c,r)  = ESUBM0(OCOM2NCOM(c));
+
+(all,a,ACTS)(all,r,REG) ESUBT(a,r)  = ESUBT0(PROD2ACTS(a));
+(all,e,ENDW)(all,r,REG)ETRAE(e,r)  = 0.0;  
+(all,e,ENDWS)(all,r,REG)ETRAE(e,r)  = ETRAE0(e);  
+
+Coefficient
+(all,a,ACTS)(all,r,REG) ESUBC(a,r)
+ # Elasticity of subs among intermediate commodity inputs at region level #;
+(all,m,MARG) ESUBS(m)
+ # Elasticity of subs among transportation service inputs #;
+(all,r,REG) ESUBI(r)
+ # Elasticity of subs among investment commodities  at region level #;
+(all,r,REG) ESUBG(r)
+ # Elasticity of subs among commodities in gov't demand  at region level #;
+(all,j,ACTS)(all,r,REG) ETRAQ(j,r)
+ # Elasticity of transformation among commodities produced by industries #;
+(all,c,COMM)(all,r,REG) ESUBQ(c,r)
+ # CES elasticity for allocation of commodity supply #;
+
+Formula
+(all,a,ACTS)(all,r,REG) ESUBC(a,r) = 0.0;
+(all,m,MARG) ESUBS(m) = 1.0;
+                 (all,r,REG) ESUBI(r)   = 0.0;
+                 (all,r,REG) ESUBG(r)   = 1.0;
+(all,j,ACTS)(all,r,REG) ETRAQ(j,r) = -0.000001;
+(all,c,COMM)(all,r,REG) ESUBQ(c,r) = 0.0; 
+
+Write
+ DVER   to file NewPARM header "DVER";
+TRANSFER (IfHeaderExists) 
+ "DREL" from file SETS to file NewPARM;
+Write
+ SUBPAR to file NewPARM header "SUBP";
+ INCPAR to file NewPARM header "INCP";
+ ESUBT  to file NewPARM header "ESBT";
+ ESUBC  to file NewPARM header "ESBC";
+ ESUBVA to file NewPARM header "ESBV";
+ ETRAE  to file NewPARM header "ETRE";
+ ETRAQ  to file NewPARM header "ETRQ";
+ ESUBD  to file NewPARM header "ESBD";
+ ESUBM  to file NewPARM header "ESBM";
+ ESUBS  to file NewPARM header "ESBS";
+ ESUBG  to file NewPARM header "ESBG";
+ ESUBI  to file NewPARM header "ESBI";
+ ESUBQ  to file NewPARM header "ESBQ";
+ ENDOWFLAG to file NewPARM header "EFLG";
+TRANSFER (IfHeaderExists) 
+ "RDLT"  from file ParmFile to file NewPARM;
+ "RFLX"  from file ParmFile to file NewPARM; 
+
+!<  
+ --------------------
+ I. Write set headers       
+ --------------------
+>!
+Write
+ DVER to file NEWSETS header "DVER";
+TRANSFER (IfHeaderExists) 
+ "DREL" from file SETS to file NEWSETS;
+Write
+(set)REG    to file NEWSETS header "REG";
+(set)COMM   to file NEWSETS header "COMM";
+(set)MARG   to file NEWSETS header "MARG";
+(set)ACTS   to file NEWSETS header "ACTS";
+(set)ENDW   to file NEWSETS header "ENDW";
+(set)ENDWM  to file NEWSETS header "ENDM";
+(set)ENDWF  to file NEWSETS header "ENDF";
+(set)ENDWS  to file NEWSETS header "ENDS";
+(set)ENDWT  to file NEWSETS header "ENDT";

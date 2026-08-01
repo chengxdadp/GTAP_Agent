@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GTAP Agent Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="chat-pane" aria-label="Chat">
+        <header class="topbar">
+          <div>
+            <h1>GTAP Agent Console</h1>
+            <p>Run auditable GTAP workflows through local tool calls.</p>
+          </div>
+          <div class="status-pill" id="statusPill">Ready</div>
+        </header>
+
+        <div class="quick-actions" aria-label="Quick actions">
+          <button data-prompt="Update the project's default baseline to 2024. First use build_2024_baseline_update to generate the 2014-to-2024 baseline-update CMF. Then use run_gtap_scenario with set_as_default_baseline=true to solve it and register the result as the project's default 2024 baseline database.">Set 2024 Default Baseline</button>
+          <button data-prompt="Run a policy analysis on the 2024 baseline in which China imposes a 20% import tariff on soybeans from the United States. Generate the policy CMF, run RunGTAP, read the results, and explain the effects on bilateral soybean trade and related sectors.">Soybean Tariff</button>
+          <button data-prompt="Run a policy analysis on the 2024 baseline in which the United States imposes a 10% tariff on imports from all sources. Generate the policy CMF, run RunGTAP, read the results, and explain the effects on the United States and its major trading partners.">U.S. 10% Global Tariff</button>
+          <button data-prompt="Read the latest run results and summarize changes in GDP, welfare (EV), major sectors, and key bilateral trade flows.">Interpret Latest Results</button>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <form class="composer" id="composer">
+          <textarea id="messageInput" rows="3" placeholder="For example: Build the 2024 baseline update, skip the full WITS tariff download, and run the baseline CMF."></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <aside class="chain-pane" aria-label="Execution trace">
+        <header>
+          <h2>Execution Trace</h2>
+          <button class="ghost" id="clearChain" type="button">Clear</button>
+        </header>
+        <div class="chain-list" id="chainList">
+          <div class="empty-state">Tool calls will appear here, including scripts, arguments, exit codes, and summary files.</div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="./app.js?v=english-ui-1"></script>
+  </body>
+</html>

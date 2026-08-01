@@ -1,0 +1,16 @@
+This program installs RunGTAP to your hard disk.
+
+It places shortcuts to the RunGTAP program on your desktop
+and on the Start Menu.
+
+When you first start RunGTAP, please spend a little time
+looking through the on-line help. Also print out the
+tutorial Ho2K.DOC which will be found in the RunGTAP
+directory.
+
+The RunGTAP installation may contain 3rd party components
+or DLL libraries which may only be redistributed in
+compliance with the conditions imposed by their creators.
+Such 3rd party components must not be disassembled or
+reverse engineered. By clicking on INSTALL you agree to
+these terms.

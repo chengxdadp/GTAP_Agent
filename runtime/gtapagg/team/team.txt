@@ -1,0 +1,31 @@
+! Lines in this file that begin with "!" are treated as comments
+! Blank lines are also ignored
+! Other lines should consist of:
+! (a) a jpg filename, approximate size 80x120 pixels
+! (b) a space, followed by picture caption
+! Pictures are shown in the sequence below, starting at a random position
+Arjan.jpg Arjan Lejour 
+Burcu.jpg Zeynep Burcu Irfanoglu
+DvdM.jpg Dominique Van der Mensbrugghe
+EF.jpg Emanuele Ferrari
+Frank.jpg Frank van Tongeren
+George.jpg George Philippidis
+Iman.jpg Iman Haqiqi
+Mondher.jpg Mondher Mimouni
+Nelson.jpg Nelson Villoria
+Pierre.jpg Pierre Boulanger
+Zekarias.jpg Zekarias Hussein
+MarkG.jpg Mark Gehlhar 
+everett.jpg Everett Peterson
+ram.jpg Robert McDougall
+many.jpg Many IO-table contributors
+tw.jpg Terrie Walmsley
+NicoL.jpg Nico van Leeuwen
+badri.jpg Badri Narayanan
+laborde.jpg David Laborde
+Angel.jpg Angel Aguiar
+hans.jpg Hans Jensen
+Alla.jpg Alla Golub
+Erwin.jpg Erwin Corong
+Tom.jpg Tom Hertel
+jmh.jpg Mark Horridge

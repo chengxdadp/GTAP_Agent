@@ -1,0 +1,59 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and local Python packaging output
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+scripts/key.txt
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+tokens*.json
+
+# Local Agent and workspace metadata
+.agents/
+.codex/
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.log
+*.out
+
+# Generated GTAP/RunGTAP outputs.
+# Existing tracked files remain tracked; use git add -f for curated result fixtures.
+result/
+
+# Project-local runtime scratch outputs. Runtime programs and model inputs are distributable artifacts;
+# only mutable work products are ignored here.
+runtime/rungtap/work/*
+runtime/rungtap/gtap2015_*/SaveSims/
+runtime/gtapagg/GTAP10A/GTAP/input/
+runtime/gtapagg/GTAP10A/GTAP/output/

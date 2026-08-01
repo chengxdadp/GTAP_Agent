@@ -1,0 +1,360 @@
+!___________________________GTAPVOL.TAB FILE__________________________________!
+!                                                                             !
+!                        Global Trade Analysis Project                        !
+!                         The GTAP Modeling Framework                         !
+!                  Computing Volume Changes from Results                      !
+!                                 1994 Model                                  !
+!                           Version 3, November 1997                          !
+! To be used with results produced using Version 3, Nov. 1997 of GTAP.TAB     !
+!_____________________________________________________________________________!
+
+!-----------------------------------------------------------------------------!
+! HISTORY of GTAPVOL.TAB                                                      !
+!-----------------------------------------------------------------------------!
+! Version 1    July 1994   (Used in GTAP Short Course, July-August 1994)
+  Version 2    April 1995  (Drops variables for aggregated trade quantities:
+                            qex(i,r) and qim(i,r). These may be computed
+                            directly by summarizing volumes derived from
+                            qxs(i,r,s) )
+  Version 3    Nov 1997    (Allows for additional v.4 primary factors and
+			    writes HAR file for viewing with VIEWHAR. Display
+			    file is no longer used.
+  Version 4    Sept 1998    Reduces sets to minimum necessary with new Union
+                            operators.                                        !
+
+!-----------------------------------------------------------------------------!
+!                                    SETS                                     !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------------------------------------------------!
+! Sets define relevant groupings of entities over which we will be performing
+  operations in the model.  SUBSETS are defined in order to facilitate
+  summation over only a portion of a given group, e.g. tradeable commodities. !
+
+!-----------------------------------------------------------------------------!
+
+FILE GTAPSETS # File with set specification #;
+
+SET REG # Regions in the model #
+      MAXIMUM SIZE 10 READ ELEMENTS FROM FILE gtapsets HEADER "H1";
+
+SET TRAD_COMM # TRADED COMMODITIES #
+      MAXIMUM SIZE 10 READ ELEMENTS FROM FILE gtapsets HEADER "H2";
+
+SET CGDS_COMM # CAPITAL GOODS Commodities #
+      MAXIMUM SIZE 1  READ ELEMENTS FROM FILE gtapsets HEADER "H9";
+
+SET ENDW_COMM # ENDOWMENT COMMODITIES #
+      MAXIMUM SIZE 5  READ ELEMENTS FROM FILE gtapsets HEADER "H6";
+
+SET ENDWC_COMM # Capital Endowment Commodity # (capital) ;
+
+SET PROD_COMM # PRODUCED COMMODITIES  # = TRAD_COMM UNION CGDS_COMM ;
+
+SET DEMD_COMM # DEMANDED COMMODITIES # = ENDW_COMM UNION TRAD_COMM  ;
+
+SET NSAV_COMM # NON-SAVINGS COMMODITIES # = DEMD_COMM UNION CGDS_COMM ;
+
+SUBSET PROD_COMM IS SUBSET OF NSAV_COMM ;
+
+SUBSET ENDWC_COMM IS SUBSET OF NSAV_COMM;
+Set
+    MARG_COMM # margin commodities #
+    Maximum size 10 read elements from file GTAPSETS header "MARG"; !mod jmh!
+Subset
+    MARG_COMM is subset of TRAD_COMM;
+Set
+    NMRG_COMM # non-margin commodities # = TRAD_COMM - MARG_COMM;
+
+
+!-----------------------------------------------------------------------------!
+!                                   FILES                                     !
+!-----------------------------------------------------------------------------!
+
+FILE        GTAPDATA # The file containing all base data. # ;
+FILE        GSLTOHAR # The file containing results.       # ;
+
+!-----------------------------------------------------------------------------!
+!                                 Data base                                   !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------------------------------------------------!
+!               base revenues and expenditures at market prices               !
+!-----------------------------------------------------------------------------!
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)            VXMD(i,r,s)
+            ! exports of commodity i from region r to
+            destination s valued at market prices
+            (tradeables only)  ! ;
+
+COEFFICIENT (all,i,MARG_COMM)(all,r,REG)                       VST(i,r)
+            ! exports of commodity i from region r for
+            international transportation valued at market prices
+            (tradeables only)  ! ;
+
+COEFFICIENT (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)      VFM(i,j,r)
+            ! producer expenditure on i by industry j,
+              in region r, valued at market prices ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      VDFM(i,j,r)
+            ! purchases of domestic i r for use in j in region r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       VDPM(i,r)
+            ! private household expenditure on domestic i in r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       VDGM(i,r)
+            ! government household expenditure on domestic i in r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      VIFM(i,j,r)
+            ! purchases of imports i for use in j in region r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       VIPM(i,r)
+            ! private household expenditure on i in r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       VIGM(i,r)
+            ! gov't household expenditure on i in r ! ;
+
+! Now read in the base data.                                             !
+
+READ (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)                  VXMD(i,r,s)
+                 FROM FILE GTAPDATA HEADER "VXMD" ;
+
+READ (all,i,MARG_COMM)(all,r,REG)                             VST(i,r)
+            FROM FILE GTAPDATA HEADER "VST" ;
+
+READ (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)            VFM(i,j,r)
+            FROM FILE GTAPDATA HEADER "VFM" ;
+
+READ (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)            VIFM(i,j,r)
+            FROM FILE GTAPDATA HEADER "VIFM" ;
+
+READ (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)            VDFM(i,j,r)
+            FROM FILE GTAPDATA HEADER "VDFM" ;
+
+READ (all,i,TRAD_COMM)(all,r,REG)                             VIPM(i,r)
+            FROM FILE GTAPDATA HEADER "VIPM" ;
+
+READ (all,i,TRAD_COMM)(all,r,REG)                             VDPM(i,r)
+            FROM FILE GTAPDATA HEADER "VDPM" ;
+
+READ (all,i,TRAD_COMM)(all,r,REG)                             VIGM(i,r)
+            FROM FILE GTAPDATA HEADER "VIGM" ;
+
+READ (all,i,TRAD_COMM)(all,r,REG)                             VDGM(i,r)
+            FROM FILE GTAPDATA HEADER "VDGM" ;
+
+!-----------------------------------------------------------------------------!
+!                   DERIVATIVES OF THE BASE DATA                              !
+!-----------------------------------------------------------------------------!
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                         VDM(i,r)
+            ! domestic sales of commodity i in region r
+              valued at market prices (tradeables only)  ! ;
+
+FORMULA (all,i,TRAD_COMM)(all,r,REG)
+        VDM(i,r) = VDPM(i,r) + VDGM(i,r)
+                 + sum(j,PROD_COMM, VDFM(i,j,r)) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                         VXM(i,r)
+            ! value of exports of commodity i in r
+              at domestic market prices ! ;
+
+FORMULA (all,i,TRAD_COMM)(all,r,REG)
+         VXM(i,r) = sum(s,REG, VXMD(i,r,s)) ;
+
+COEFFICIENT (all,i,NSAV_COMM)(all,r,REG)                         VOM(i,r)
+            ! value of commodity i output in region r. ! ;
+
+FORMULA (all,i,ENDW_COMM)(all,r,REG)
+        VOM(i,r) = sum(j,PROD_COMM, VFM(i,j,r)) ;
+
+FORMULA (all,i,MARG_COMM)(all,r,REG)
+        VOM(i,r) = VDM(i,r) + VXM(i,r) + VST(i,r) ;
+
+FORMULA (all,i,NMRG_COMM)(all,r,REG)
+        VOM(i,r) = VDM(i,r) + VXM(i,r);
+
+! but we don't worry about investment !
+
+FORMULA (all,h,CGDS_COMM)(all,r,REG)
+        VOM(h,r) = 0 ;
+
+
+!-----------------------------------------------------------------------------!
+!                             Solution Variables                              !
+!-----------------------------------------------------------------------------!
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)            qxs(i,r,s)
+            ! percentage change in exports of commodity i from region r to
+            destination s ! ;
+
+COEFFICIENT (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)      qfe(i,j,r)
+            ! percentage change in endowment demand i by industry j,
+              in region r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      qfd(i,j,r)
+            ! p.c. in imports of i for use in j in region r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       qpd(i,r)
+            ! p.c. in private household demand for imports of i in r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       qgd(i,r)
+            ! p.c. in gov't household demand for imports of i in r ! ;
+
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       qds(i,r)
+         # total domestic sales of commodity i in r # ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      qfm(i,j,r)
+            ! p.c. in imports of i for use in j in region r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       qpm(i,r)
+            ! p.c. in private household demand for imports of i in r ! ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       qgm(i,r)
+            ! p.c. in gov't household demand for imports of i in r ! ;
+
+COEFFICIENT (all,i,NSAV_COMM)(all,r,REG)                       qo(i,r)
+            ! percentage change in output of i by in region r ! ;
+
+! Now read in the solution variables                                       !
+
+READ     (all,i,NSAV_COMM)(all,r,REG)                       qo(i,r)
+         from file gsltohar header "qo  "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)            qxs(i,r,s)
+         from file gsltohar header "qxs "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)                       qds(i,r)
+         from file gsltohar header "qds "  ;
+
+         (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)      qfe(i,j,r)
+         from file gsltohar header "qfe "  ;
+
+         (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      qfm(i,j,r)
+         from file gsltohar header "qfm "  ;
+
+         (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)      qfd(i,j,r)
+         from file gsltohar header "qfd "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)                       qpm(i,r)
+         from file gsltohar header "qpm "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)                       qpd(i,r)
+         from file gsltohar header "qpd "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)                       qgm(i,r)
+         from file gsltohar header "qgm "  ;
+
+         (all,i,TRAD_COMM)(all,r,REG)                       qgd(i,r)
+         from file gsltohar header "qgd "  ;
+
+
+! Next compute the relevant volume changes                                 !
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)            DQXS(i,r,s)
+            ! change in volume of exports of commodity i from region r to
+            destination s, evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)
+         DQXS(i,r,s) = [qxs(i,r,s)/100] * VXMD(i,r,s) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)                       DQDS(i,r)
+            ! change in volume of domestic sales of commodity i
+             in region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQDS(i,r) = [qds(i,r)/100] * VDM(i,r) ;
+
+COEFFICIENT (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)       DQFE(i,j,r)
+            ! change in volume of endowment commodity i in j of region r
+            evaluated at initial market prices ! ;
+FORMULA     (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)
+         DQFE(i,j,r) = [qfe(i,j,r)/100] * VFM(i,j,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)       DQFM(i,j,r)
+            ! change in volume of imported, intermediate commodity i
+             in j of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)
+         DQFM(i,j,r) = [qfm(i,j,r)/100] * VIFM(i,j,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)       DQFD(i,j,r)
+            ! change in volume of domestic use of intermediate commodity i
+             in j of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)
+         DQFD(i,j,r) = [qfd(i,j,r)/100] * VDFM(i,j,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)       DQPM(i,r)
+            ! change in volume of private hhld imported commodity i
+             of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQPM(i,r) = [qpm(i,r)/100] * VIPM(i,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)       DQPD(i,r)
+            ! change in volume of private hhld domestic commodity i
+             of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQPD(i,r) = [qpd(i,r)/100] * VDPM(i,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)       DQGM(i,r)
+            ! change in volume of government hhld imported commodity i
+             of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQGM(i,r) = [qgm(i,r)/100] * VIGM(i,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)       DQGD(i,r)
+            ! change in volume of government hhld imported commodity i
+             of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQGD(i,r) = [qgd(i,r)/100] * VDGM(i,r) ;
+
+COEFFICIENT (all,i,TRAD_COMM)(all,r,REG)       DQO(i,r)
+            ! change in volume of output of commodity i
+             of region r evaluated at initial market prices ! ;
+FORMULA     (all,i,TRAD_COMM)(all,r,REG)
+         DQO(i,r) = [qo(i,r)/100] * VOM(i,r) ;
+
+COEFFICIENT (all,r,REG)(all,s,REG)            DTOT(r,s)
+            ! change in volume of total exports from region r to
+            destination s, evaluated at initial market prices ! ;
+FORMULA     (all,r,REG)(all,s,REG)
+         DTOT(r,s) = sum(i,TRAD_COMM, DQXS(i,r,s)) ;
+
+! Note that by creating alternative subsets of traded commodities, you
+  can also compute changes in the bilateral trade volume of, eg., food
+  products.
+
+ It is also sometimes handy to create new variables, for example, the volume
+ of US exports of i to destination s, in order to obtain a 2 dimensional
+ display file which can be used directly as a table.  !
+
+! Now write the output of this program to a HAR file for easy viewing and
+  summation. !
+
+FILE (New) OUTFILE # HAR file of volume changes # ;
+
+Write
+DQXS to file OUTFILE header "DQXS"
+ longname "DVol, exports of i from r to s, I.M.P.";
+DQDS to file OUTFILE header "DQDS"
+ longname "DVol, domestic sales of i in r, I.M.P.";
+DQFE to file OUTFILE header "DQFE"
+ longname "DVol, endowment commodity i in ind j of r, I.M.P.";
+DQFM to file OUTFILE header "DQFM"
+ longname "DVol, imported, intermediate commodity i in ind j of r, I.M.P.";
+DQFD to file OUTFILE header "DQFD"
+ longname "DVol, domestic, intermediate commodity i in ind j of r, I.M.P.";
+DQPM to file OUTFILE header "DQPM"
+ longname "DVol, private hhld imported commodity i of r, I.M.P.";
+DQPD to file OUTFILE header "DQPD"
+ longname "DVol, private hhld domestic commodity i of r, I.M.P.";
+DTOT to file OUTFILE header "DTOT"
+ longname "DVol, total exports from r to s, I.M.P.";
+DQO  to file OUTFILE header "DQO "
+ longname "DVol, output of commodity i in r, I.M.P.";
+DQGD to file OUTFILE header "DQGD"
+ longname "DVol, government hhld imported commodity i in r, I.M.P.";
+DQGM to file OUTFILE header "DQGM"
+ longname "DVol, government hhld imported commodity i in r, I.M.P.";
+
+
+!___________________End of TABLO File GTAPVOL.TAB_____________________________!
+

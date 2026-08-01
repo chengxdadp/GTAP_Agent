@@ -1,0 +1,101 @@
+
+ ! This file was created at 16:22:30 on 17-JUL-2026 by the program
+ !  <shocks.for 09-SEP-2020> [shocks.tab]
+ ! which accesses some of the routines in the GEMPACK software release
+ !  <GEMPACK Release 12.1.003   January 2020>
+ 
+ !     -------------------------------------------------------                
+ !    !            GEMPACK Software System Licence            !               
+ !    !   Limited Size Executable-image Licence for GEMPACK   !               
+ !    !                 Licence No.  GEI-9999                 !               
+ !    !          Licence for Release 12.2 of GEMPACK          !               
+ !    !       Installer-generated expiring licence. Ask       !               
+ !    !     sales at gempack.com for a permanent licence.     !               
+ !    !    (Your GEMPACK licence expires on 19-OCT-2026.)     !               
+ !     -------------------------------------------------------                
+    
+
+ !
+ ! Values of TGD_HAT(TRAD_COMM,REG) - a real array of size 10x10
+ !---------------------------------
+ !
+
+! Coefficient TGD_HAT(TRAD_COMM,REG)
+
+ ! (Entries are written one "row" at a time - maximum of 4 per line.)
+
+ 
+ 10 10  real row_order;
+ 
+! The matrix TGD_HAT(%1,%2)  with %1 in TRAD_COMM and %2 in REG. +++++++++++++
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-1.07288244E-04   0.0000000      -1.4016685       24.923798    ! %1=GrainsCrops
+! %2=NAmerica        LatinAmer       EU_28           MENA
+ 1.22144837E-02 -0.80186445      5.77425398E-02 -4.20274474E-02
+! %2=SSA             RestofWorld
+ -3.6320214     -0.53551364
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-2.30068644E-03   0.0000000      -1.9683557     -0.35237634    ! %1=MeatLstk
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000      -5.3641486     -0.15037064     -5.96046084E-05
+! %2=SSA             RestofWorld
+-0.67931700     -0.24292916
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+  0.0000000     -6.84864819E-02  -4.9575200      1.24946944E-02! %1=Extraction
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000     -5.06613823E-03 -7.03673735E-02 -3.76687176E-03
+! %2=SSA             RestofWorld
+-0.21160078      8.48177671E-02
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-1.19209271E-05 -1.31130044E-04  -2.8271227     -0.74638325    ! %1=ProcFood
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000      -7.8018203      -9.5574408     -7.23548047E-03
+! %2=SSA             RestofWorld
+ -1.8792367      -1.6830114
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-1.21697877E-02   0.0000000      -2.1334140      -2.6712418    ! %1=TextWapp
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000      -9.1609545      -13.004067      -4.2285814
+! %2=SSA             RestofWorld
+ -3.7120183      -2.1777060
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-5.75747713E-03 -2.72557344E-02  -2.5398111      -8.7468729    ! %1=LightMnfc
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000      -11.017605      -4.2505212     -0.32650566
+! %2=SSA             RestofWorld
+ -2.0234065      -1.5110986
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+ -2.1449215     -0.18450488      -2.9896407      -12.993853    ! %1=HeavyMnfc
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000     -0.25847924      -14.480690     -0.56984472
+! %2=SSA             RestofWorld
+ -1.9907017      -5.6247745
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-0.89908540     -1.87155080E-03  -1.8309402      -1.8656114    ! %1=Util_Cons
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000     -0.48687667     -0.64473200     -8.79824236E-02
+! %2=SSA             RestofWorld
+-0.95419723     -0.51151967
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-0.20944031     -0.55957854      -3.0057707      -2.9023585    ! %1=TransComm
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000      -2.2687092     -0.23830234     -0.14224057
+! %2=SSA             RestofWorld
+  3.8902905      0.19876450
+
+! %2=Oceania         EastAsia        SEAsia          SouthAsia
+-0.39201474     -0.25770837     -9.38011706E-02  -1.6034843    ! %1=OthServices
+! %2=NAmerica        LatinAmer       EU_28           MENA
+  0.0000000     -0.38094282     -5.82474731E-02 -0.11522590
+! %2=SSA             RestofWorld
+-0.34925127     -0.51420987
+

@@ -1,0 +1,357 @@
+!___________________________PEelast.TAB FILE_________________________________!
+!                                                                             !
+!                        Global Trade Analysis Project                        !
+!                         The GTAP Modeling Framework                         !
+!                  Computing PE price elasticities of demand                  !
+!_____________________________________________________________________________!
+! This file computes the partial equilibrium demand elasticities by agent in
+  the GTAP model. These include:
+      - compensated and uncompensated household demand elasticities
+      - conditional demand elasticities by firms
+      - conditional import demand elasticities by region  
+      - conditional export demand elasticities by region                      !
+!   History of this file:                                                     !
+!   - intially created by Tom Hertel, 10/98                                   !
+!-----------------------------------------------------------------------------!
+!                                    SETS                                     !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------------------------------------------------!
+! Sets define relevant groupings of entities over which we will be performing
+  operations in the model.  SUBSETS are defined in order to facilitate
+  summation over only a portion of a given group, e.g. tradeable commodities.!
+
+!-----------------------------------------------------------------------------!
+
+FILE GTAPDATA # The file containing all base data # ;
+FILE GTAPPARM # The file containing all behavioral parameters # ;
+FILE GTAPSETS # File with set specification #;
+FILE (NEW) ELASTICITIES # File with headers for viewing # ;
+
+!-----------------------------------------------------------------------------!
+!                                    SETS                                     !
+!-----------------------------------------------------------------------------!
+!-----------------------------------------------------------------------------!
+SET REG # Regions in the model #
+      read elements from file gtapsets header "H1";
+
+SET TRAD_COMM # TRADED COMMODITIES #
+      read elements from file gtapsets header "H2";
+
+SET CGDS_COMM # CAPITAL GOODS Commodities #
+      read elements from file gtapsets header "H9";
+
+SET ENDW_COMM # ENDOWMENT COMMODITIES #
+      read elements from file gtapsets header "H6";
+
+SET ENDWC_COMM # Capital Endowment Commodity # (capital) ;
+
+SET PROD_COMM # PRODUCED COMMODITIES  # = TRAD_COMM UNION CGDS_COMM ;
+
+SET DEMD_COMM # DEMANDED COMMODITIES # = ENDW_COMM UNION TRAD_COMM  ;
+
+SET NSAV_COMM # NON-SAVINGS COMMODITIES # = DEMD_COMM UNION CGDS_COMM ;
+
+SUBSET PROD_COMM IS SUBSET OF NSAV_COMM ;
+
+SUBSET ENDWC_COMM IS SUBSET OF NSAV_COMM;
+
+!-----------------------------------------------------------------------------!
+!                              The following are new sets                     !
+!                                   for GTAPVIEW                              !
+!-----------------------------------------------------------------------------!
+
+! Supplementary sets for "toggles" in VIEWHAR                                 !
+
+SET ELASTCOMP(compelast,inceffect) ;
+
+!-----------------------------------------------------------------------------!
+!   base revenues and expenditures at agent's prices       !
+!-----------------------------------------------------------------------------!
+
+Coefficient (all,i,endw_comm)(all,r,reg)                    EVOA(i,r)
+        # value of output at agent's prices # ;
+
+Coefficient (all,i,endw_comm)(all,j,prod_comm)(all,r,reg)   EVFA(i,j,r)
+        # producer expenditure on i by industry j # ;
+
+
+Coefficient (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)   VIFA(i,j,r)
+        # purchases of imported i r for use in j in region r # ;
+
+Coefficient (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)   VDFA(i,j,r)
+        # purchases of domestic i r for use in j in region r # ;
+
+Coefficient (all,i,trad_comm)(all,r,reg)                    VIPA(i,r)
+        # private household expenditure on imported i # ;
+
+Coefficient (all,i,trad_comm)(all,r,reg)                    VDPA(i,r)
+        # private household expenditure on domestic i in r # ;
+
+!-----------------------------------------------------------------------------!
+!               base revenues and expenditures at prices               !
+!-----------------------------------------------------------------------------!
+
+Coefficient (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)      VDFM(i,j,r)
+        # purchases of domestic i r for use in j in region r # ;
+
+Coefficient (all,i,trad_comm)(all,r,reg)(all,s,reg)             VIMS(i,r,s)
+        # imports of commodity i from region r to s, at dom market prices # ;
+
+!-----------------------------------------------------------------------------!
+!              base revenues and expenditures at world prices
+!
+!-----------------------------------------------------------------------------!
+
+Coefficient (all,i,trad_comm)(all,r,reg)(all,s,reg)             VXWD(i,r,s)
+        ! exports of commodity i from region r to
+          destination s valued fob (tradeables only)  ! ;
+
+!-----------------------------------------------------------------------------!
+!                   Reading basedata.
+!
+!-----------------------------------------------------------------------------!
+
+Read (all,i,endw_comm)(all,r,reg)                             EVOA(i,r)
+        from file GTAPDATA header "EVOA" ;
+     (all,i,endw_comm)(all,j,prod_comm)(all,r,reg)            EVFA(i,j,r)
+        from file GTAPDATA header "EVFA" ;
+     (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)            VIFA(i,j,r)
+        from file GTAPDATA header "VIFA" ;
+     (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)            VDFA(i,j,r)
+        from file GTAPDATA header "VDFA" ;
+     (all,i,trad_comm)(all,r,reg)                             VIPA(i,r)
+        from file GTAPDATA header "VIPA" ;
+     (all,i,trad_comm)(all,r,reg)                             VDPA(i,r)
+        from file GTAPDATA header "VDPA" ;
+!     (all,i,trad_comm)(all,r,reg)                             VIGA(i,r)
+        from file GTAPDATA header "VIGA" ;
+     (all,i,trad_comm)(all,r,reg)                             VDGA(i,r)
+        from file GTAPDATA header "VDGA" ;!
+     (all,i,trad_comm)(all,j,prod_comm)(all,r,reg)            VDFM(i,j,r)
+        from file GTAPDATA header "VDFM" ;
+!     (all,i,trad_comm)(all,r,reg)                             VDPM(i,r)
+        from file GTAPDATA header "VDPM" ;!
+!     (all,i,trad_comm)(all,r,reg)                             VIGM(i,r)
+        from file GTAPDATA header "VIGM" ;!
+!     (all,i,trad_comm)(all,r,reg)                             VDGM(i,r)
+        from file GTAPDATA header "VDGM" ;!
+     (all,i,trad_comm)(all,r,reg)(all,s,reg)                  VIMS(i,r,s)
+        from file GTAPDATA header "VIMS" ;
+     (all,i,trad_comm)(all,r,reg)(all,s,reg)                  VXWD(i,r,s)
+        from file GTAPDATA header "VXWD" ;
+!     (all,i,trad_comm)(all,r,reg)(all,s,reg)                  VIWS(i,r,s)
+        from file GTAPDATA header "VIWS" ;
+!
+!-----------------------------------------------------------------------------!
+!                   DERIVATIVES OF THE BASE DATA
+!
+!-----------------------------------------------------------------------------!
+
+ZERODIVIDE (ZERO_BY_ZERO) DEFAULT 0 ;
+
+Coefficient (all,i,DEMD_COMM)(all,j,prod_comm)(all,r,reg)   VFA(i,j,r)
+    # firm's expenditure on i by industry j # ;
+Formula (all,i,endw_comm)(all,j,prod_comm)(all,r,reg)
+    VFA(i,j,r) = EVFA(i,j,r) ;
+Formula (all,i,trad_comm)(all,j,prod_comm)(all,s,reg)
+    VFA(i,j,s) = VDFA(i,j,s)+VIFA(i,j,s) ;
+
+Coefficient (all,i,NSAV_COMM)(all,r,reg)                         VOA(i,r)
+        # value of commodity i output in region r # ;
+Formula (all,i,endw_comm)(all,r,reg) VOA(i,r) = EVOA(i,r);
+Formula (all,i,prod_comm)(all,r,reg)
+    VOA(i,r) = sum(j,DEMD_COMM, VFA(j,i,r));
+
+Coefficient (all,i,trad_comm)(all,r,reg)                         VPA(i,r)
+        ! private household expenditure on commodity i
+          in region r valued at agent's prices ! ;
+Formula (all,i,trad_comm)(all,s,reg)
+    VPA(i,s) = VDPA(i,s) + VIPA(i,s) ;
+
+!----------------------------------------------------------------------------!
+!                      technology and preference parameters                  !
+!----------------------------------------------------------------------------!
+
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)                          SUBPAR(i,r)
+          ! the substitution parameter in the CDE
+            minimum expenditure function  !  ;
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)                          INCPAR(i,r)
+          ! expansion parameter in the CDE minimum expenditure
+            function  !  ;
+
+
+Coefficient (all,i,TRAD_COMM)                                     ESUBM(i)
+          ! the elasticity of substitution among imports from
+            different destinations in the Armington aggregation
+            structure of all agents in all regions. !;
+
+Coefficient (all,j,PROD_COMM)                                     ESUBT(j)
+          ! elasticity of substitution among composite intermediate inputs
+            in production.  !;
+
+!----------------------------------------------------------------------------!
+!                   Reading model parameters                                 !
+!----------------------------------------------------------------------------!
+Read INCPAR from file GTAPPARM header "INCP";
+Read SUBPAR from file GTAPPARM header "SUBP";
+Read ESUBT from file GTAPPARM header "ESBT";
+Read ESUBM from file GTAPPARM header "ESBM";
+!Read ETRAE from file GTAPPARM header "ETRE";!
+
+
+!-----------------------------------------------------------------------------!
+!                             Elasticity calculations                         !
+!-----------------------------------------------------------------------------!
+
+!----------------------------------------------------------------------------!
+! Compute the Allen partials, price and income elasticities,                 !
+! for private households' purchases of aggregated consumption commodities.   !
+!----------------------------------------------------------------------------!
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)                         CONSHR(i,r)
+          # share of private household consumption devoted to good i# ;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+      CONSHR(i,r) = VPA(i,r) / sum(m, TRAD_COMM, VPA(m,r)) ;
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)                         ALPHA(i,r)
+# 1 - substitution parameter in CDE minimum expenditure function#  ;
+Formula (all,i,TRAD_COMM)(all,r,REG)            ! (HT#F1) !
+      ALPHA(i,r) = (1 - SUBPAR(i,r)) ;
+
+Coefficient (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)        APE(i,k,r)
+          #Allen partial elasticities of substitution#  ;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)             ! (HT#F2) !
+      APE(i,k,r) =  ALPHA(i,r) + ALPHA(k,r)
+               - sum(m,TRAD_COMM, CONSHR(m,r) * ALPHA(m,r)) ;
+Formula (all,i,TRAD_COMM)(all,r,REG)            ! (HT#F3) !
+      APE(i,i,r) =  2.0 * ALPHA(i,r)
+               - sum(m,TRAD_COMM, CONSHR(m,r) * ALPHA(m,r))
+               - ALPHA(i,r) / CONSHR(i,r)  ;
+Write APE to file ELASTICITIES header "APE";
+
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)                         EY(i,r)
+         #Income elasticities of private household demand# ;
+Formula (all,i,TRAD_COMM)(all,r,REG)  ! (HT#F4) !
+      EY(i,r) =  {1.0/[sum(m,TRAD_COMM, CONSHR(m,r) * INCPAR(m,r))]}
+            * (INCPAR(i,r) * (1.0 - ALPHA(i,r))
+            + sum(m,TRAD_COMM, CONSHR(m,r) * INCPAR(m,r) * ALPHA(m,r)))
+            + (ALPHA(i,r) - sum(m,TRAD_COMM, CONSHR(m,r) * ALPHA(m,r))) ;
+Write    EY to file ELASTICITIES header "EY";
+
+Coefficient (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    EP(i,k,r) 
+    #Uncompensated price elasticities of private household demand#;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    EP(i,k,r) = 0;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    EP(i,k,r) = (APE(i,k,r) - EY(i,r)) * CONSHR(k,r);
+Write    EP to file ELASTICITIES header "EP";
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)
+    COMPDEM(i,r)
+    #Own-price compensated elasticities of household demand#;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+    COMPDEM(i,r) = APE(i,i,r) * CONSHR(i,r);
+Write     COMPDEM to file ELASTICITIES header "CPDM";
+
+Coefficient
+    (all,i,TRAD_COMM)(all,r,REG)(all,v,ELASTCOMP)
+    UNCMPOWNPRIV(i,r,v)
+    #uncompensated own-price elasticities of demand by private hhld#;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+    UNCMPOWNPRIV(i,r,"compelast") = APE(i,i,r) * CONSHR(i,r) ;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+    UNCMPOWNPRIV(i,r,"inceffect") = - CONSHR(i,r) * EY(i,r) ;
+Write UNCMPOWNPRIV to file ELASTICITIES header "HP1";
+
+Coefficient
+    (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)(all,v,ELASTCOMP)
+    UNCMPXPRIV(i,k,r,v)
+    #uncompensated cross-price elasticities of demand by private hhld#;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    UNCMPXPRIV(i,k,r,"compelast") = APE(i,k,r) * CONSHR(k,r) ;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    UNCMPXPRIV(i,k,r,"inceffect") = - CONSHR(k,r) * EY(i,r) ;
+Write UNCMPXPRIV to file ELASTICITIES header "HP2";
+
+!----------------------------------------------------------------------------!
+! Compute the price and income elasticities,                                 !
+! for gov't households' purchases of aggregated consumption commodities.     !
+!----------------------------------------------------------------------------!
+
+Coefficient
+    (all,i,TRAD_COMM)(all,r,REG)(all,v,ELASTCOMP) UNCMPOWNGOVT(i,r,v)
+# uncompensated own-price elasticities of demand by gov't hhld #;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+    UNCMPOWNGOVT(i,r,"compelast") = CONSHR(i,r) - 1 ;
+Formula (all,i,TRAD_COMM)(all,r,REG)
+    UNCMPOWNGOVT(i,r,"inceffect") = - CONSHR(i,r) ;
+Write UNCMPOWNGOVT to file ELASTICITIES header "HG1";
+
+Coefficient
+    (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)(all,v,ELASTCOMP)
+    UNCMPXGOVT(i,k,r,v)
+#uncompensated cross-price elasticities of demand by gov't hhld# ;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    UNCMPXGOVT(i,k,r,"compelast") = CONSHR(k,r) ;
+Formula (all,i,TRAD_COMM)(all,k,TRAD_COMM)(all,r,REG)
+    UNCMPXGOVT(i,k,r,"inceffect") = - CONSHR(k,r) ;
+Write UNCMPXGOVT to file ELASTICITIES header "HG2";
+
+!----------------------------------------------------------------------------!
+! Compute firms' conditional own-price elasticities of demand                !
+!----------------------------------------------------------------------------!
+
+Coefficient (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,s,REG)       FIRMSHR(i,j,s)
+         #share of domestic intermediate purchases of i by sector j #;
+Formula (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,s,REG)
+      FIRMSHR(i,j,s) = [VDFM(i,j,s)/sum(k,PROD_COMM, VDFM(i,k,s))] ;
+
+Coefficient (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG) FIRMOWNPR(i,j,r)
+# conditional own-price elasticities of firm's demand #;
+Formula (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)
+      FIRMOWNPR(i,j,r) = - ESUBT(j) * {1 - [VFA(i,j,r)/VOA(j,r)]} ;
+Write FIRMOWNPR to file ELASTICITIES header "F1";
+
+Coefficient (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG) CNT_FRMOWNPR(i,j,r)
+#cont of firm j to industry-wide cond elasticity for i#;
+Formula  (all,i,TRAD_COMM)(all,j,PROD_COMM)(all,r,REG)
+      CNT_FRMOWNPR(i,j,r) = FIRMSHR(i,j,r)
+                           * {- ESUBT(j) * {1 - [VFA(i,j,r)/VOA(j,r)]}} ;
+Write CNT_FRMOWNPR to file ELASTICITIES header "F2";
+
+!----------------------------------------------------------------------------!
+! Compute conditional trade elasticities                                     !
+!----------------------------------------------------------------------------!
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)              MSHRS(i,r,s)
+          ! The share of imports by source, r, in the aggregate
+            import bill of region s evaluated at market prices. ! ;
+Formula (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)
+      MSHRS(i,r,s) = VIMS(i,r,s) / sum(k,REG, VIMS(i,k,s)) ;
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)(all,s,REG) OWNIMPELAST(i,r,s)
+#conditional own-price elasticities of import demand#;
+Formula (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)
+      OWNIMPELAST(i,r,s)= - ESUBM(i) * [1 - MSHRS(i,r,s)] ;
+Write OWNIMPELAST to file ELASTICITIES header "T1";
+
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)              XSHRD(i,r,s)
+          ! The share of exports by destination, s, in the aggregate
+            exports of region r evaluated at world prices. ! ;
+Formula (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)
+      XSHRD(i,r,s) = [VXWD(i,r,s)/sum(t,REG, VXWD(i,r,t))] ;
+
+Coefficient (all,i,TRAD_COMM)(all,r,REG)(all,s,REG) CNT_EXPELAST(i,r,s)
+#contribution of s to export demand elasticity for i from r#;
+Formula  (all,i,TRAD_COMM)(all,r,REG)(all,s,REG)
+      CNT_EXPELAST(i,r,s) = XSHRD(i,r,s) * {- ESUBM(i) * [1 - MSHRS(i,r,s)]} ;
+Write CNT_EXPELAST to file ELASTICITIES header "T2";
+
+
+!___________________End of TABLO File _____________________________!
