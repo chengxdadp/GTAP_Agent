@@ -1,171 +1,210 @@
-# GTAP Agent Automation Workspace
+# GTAP Agent
 
-GTAP Agent organizes the GTAP 10A 2014 database, GTAPAgg aggregation, observed-data calibration, the 2024 baseline update, policy scenarios, RunGTAP/GEMPACK solving, and structured result reading into a reusable and auditable local workflow.
+GTAP Agent is a local, agent-driven workspace for building, running, and interpreting reproducible GTAP scenarios. It connects a conversational interface to a restricted set of workflow tools for model aggregation, data preparation, CMF construction, RunGTAP/GEMPACK execution, and structured result analysis.
 
-The recommended workflow is to solve the original 2014 database forward to a 2024 pre-policy baseline and register it as the project's **default 2024 baseline**. Routine policy analysis then starts from that 2024 baseline and uses a standard policy closure.
+The project is defined by this **controlled analysis architecture**, not by a particular database year or shock. The repository currently includes a ready-to-run profile built from the GTAP 10A 2014 database, a 10-region-by-10-sector aggregation, and a registered 2024 policy baseline. That profile is a bundled default and demonstration path; it is not the overall framing of GTAP Agent.
 
-## Major Upgrades
+## Architecture
 
-- **Project-local portable runtime**: RunGTAP, GEMPACK conversion tools, GTAPAgg, and the archived GTAP 10A data are stored under the project directory. Default execution no longer depends on hard-coded paths such as `C:\GP`.
-- **Consistent path resolution**: Numbered scripts prefer project-relative paths under `runtime\`, `asset\`, `config\`, and `result\`. Environment variables remain available as explicit overrides.
-- **Clear baseline terminology**: The earlier freeze/baseline terminology is now consistently expressed as the **default 2024 baseline**. The original database year is 2014; the default policy-analysis baseline year is 2024.
-- **Separate baseline and policy closures**: The baseline update uses `Swap avareg(REG) = qgdp(REG)` to infer implicit TFP. Policy scenarios restore the standard policy closure so that `qgdp` responds endogenously to policy.
-- **Agent-controlled aggregation**: The default 10-by-10 aggregation remains available, while a separate tool can create custom regional and sectoral aggregations without overwriting the default model.
-- **Structured policy modifications**: Bilateral import tariffs, regional population, factor endowment, and productivity shocks are supported, with auditable resolved JSON and CSV outputs.
-- **Targeted result reading**: The Agent can inspect solve status, GDP, welfare, trade, sector output, HAR tables, and `.sol` variables instead of relying only on console logs.
-- **English demonstration interface and prompts**: The web UI, quick scenarios, Agent system prompt, tool descriptions, dynamic aggregation context, user-visible errors, and default Agent responses are in English.
-- **Separated backend responsibilities**: `web\server.py` handles only HTTP, static files, and streaming transport. Agent orchestration, tool schemas, sessions, and model requests are contained in `web\agent.py`.
-
-## Language and Mapping Conventions
-
-- The web interface, Agent prompts, tool descriptions, documentation, and default Agent responses use English.
-- Country, region, sector, and commodity mappings use canonical English names, ISO/GTAP codes, and active aggregate names.
-- If a user writes in another language, the LLM normalizes the request to canonical English identifiers before calling a tool. The backend does not depend on language-specific alias tables.
-
-Typical mappings under the default aggregation include:
-
-```text
-China -> chn / CHN -> EastAsia
-United States -> usa / USA -> NAMerica
-soybeans -> osd -> GrainsCrops
+```mermaid
+flowchart LR
+    U["User / browser"] --> H["HTTP and streaming layer<br/>web/server.py"]
+    H --> A["Agent control layer<br/>web/agent.py"]
+    A --> T["Registered tool boundary"]
+    T --> W["Workflow scripts<br/>scripts/00–07"]
+    W --> R["Project-local GTAP runtime<br/>RunGTAP · GEMPACK · GTAPAgg"]
+    W <--> D["Model and data assets<br/>asset/ · config/ · runtime/rungtap models"]
+    R --> O["Auditable outputs<br/>result/"]
+    O --> Q["Structured result reader"]
+    Q --> A
+    A --> H
 ```
 
-After a custom aggregation, the new mapping is authoritative. The Agent must not continue assuming that `EastAsia`, `NAMerica`, or `GrainsCrops` still exists.
+The architecture separates six responsibilities:
 
-## Project-Local Runtime
+| Layer | Responsibility | Main location |
+| --- | --- | --- |
+| Interaction | Chat UI, HTTP endpoints, and NDJSON streaming | `web/index.html`, `web/app.js`, `web/server.py` |
+| Agent control | Conversation state, prompt construction, tool selection, retries, and response synthesis | `web/agent.py` |
+| Tool boundary | Validated, named operations instead of arbitrary shell access | Tool schemas and handlers in `web/agent.py` |
+| Workflow | Aggregation, observed-data preparation, CMF generation, solving, and result extraction | `scripts/` |
+| GTAP execution | Project-local RunGTAP, GEMPACK utilities, GTAPAgg, and model directories | `runtime/` |
+| Artifacts | Inputs, mappings, registered baselines, logs, CMFs, solutions, and summaries | `asset/`, `config/`, `result/` |
 
-Default locations:
+### Control flow
 
-| Component | Project-local path |
+For a typical request, the Agent:
+
+1. Interprets the requested experiment against the **active** regional and sectoral aggregation.
+2. Selects only the registered tool or tools needed for the request.
+3. Produces an auditable scenario specification and CMF without modifying the source CMF.
+4. Runs RunGTAP only when the user asks to solve the scenario.
+5. Reads `.sol`, HAR, logs, and summary files into structured JSON when results must be interpreted.
+6. Answers from tool output and artifact paths rather than inventing model results.
+
+This separation allows the CLI workflow to be used without the web Agent, and allows the Agent to orchestrate GTAP without exposing unrestricted command execution.
+
+## Core Capabilities
+
+- Build the default or a custom GTAPAgg regional/sectoral aggregation.
+- Fetch, cache, and standardize observed GDP, population, and tariff data.
+- Construct a historical/baseline-update CMF for a chosen supported model profile.
+- Create policy CMFs from structured tariff, population, factor-endowment, and productivity modifications.
+- Execute scenarios with the bundled RunGTAP/GEMPACK runtime.
+- Read solve status, accuracy, GDP, welfare, trade, sector output, HAR tables, and solution variables.
+- Preserve resolved scenario JSON/CSV, generated CMFs, logs, solution files, and summaries for audit and replication.
+- Normalize natural-language country and commodity references to the active GTAP aggregation.
+
+## Components and Boundaries
+
+### Web and Agent layer
+
+`web/server.py` is intentionally limited to static-file serving, HTTP handling, and JSON/NDJSON transport. `web/agent.py` owns the LLM client, in-memory sessions, dynamic aggregation context, tool loop, tool schemas, and execution handlers.
+
+The Agent can call only these registered operations:
+
+| Agent tool | Workflow role | Script |
+| --- | --- | --- |
+| `aggregate_gtap_model` | Rebuild the bundled default aggregation | `01_aggregate_gtap10a_2014_to_10x10.py` |
+| `aggregate_custom_gtap_model` | Create an independent custom aggregation and model | `01_aggregate_gtap10a_2014_to_10x10.py` |
+| `fetch_observed_data` | Fetch/cache data and generate active mapping tables | `04_fetch_observed_calibration_data.py` |
+| `build_2024_baseline_update` | Generate baseline-update targets and CMFs | `05_build_2024_baseline_update.py` |
+| `modify_shock_cmf` | Resolve structured changes and write a policy CMF | `06_apply_policy_shock_modifications.py` |
+| `run_gtap_scenario` | Solve a specified CMF and collect outputs | `03_run_rungtap_scenario.py` |
+| `read_gtap_results` | Query and summarize collected GTAP results | `07_read_gtap_results.py` |
+
+Tool execution is serialized because RunGTAP uses a shared local work directory. User-provided paths are constrained to the project workspace, custom aggregation does not overwrite an existing model by default, and baseline registration must be requested explicitly.
+
+### Workflow layer
+
+The numbered scripts are composable entry points, not a requirement that every request run the entire sequence:
+
+```text
+00  verify local runtime
+01  prepare an aggregation/model                       [when needed]
+04  fetch and standardize observed data                [when needed]
+05  construct a baseline update                        [when needed]
+03  solve any generated CMF
+06  construct a structured policy scenario
+03  solve the policy scenario
+07  read or query results
+```
+
+Script `02_prepare_2015_economy_shocks.py` is retained as a legacy smoke test and is not part of the main architecture.
+
+Reusable implementation is factored into:
+
+- `scripts/gtap_runtime.py`: portable runtime and executable discovery.
+- `scripts/gtap_aggregation.py`: mapping parsing, customization, and validation.
+- `scripts/gtap_observed_data.py`: data retrieval, caching, standardization, and GTAP mapping.
+
+### Runtime and artifact layer
+
+The repository resolves bundled tools before consulting the host `PATH`:
+
+| Component | Default path |
 | --- | --- |
-| RunGTAP and models | `runtime\rungtap` |
-| GEMPACK conversion tools | `runtime\gempack` |
-| GTAPAgg | `runtime\gtapagg` |
-| GTAP 10A database archive | `asset\GTAP10A_GTAP-APT_2014.PKG` |
-| Default aggregated model | `runtime\rungtap\gtap2015_10x10` |
-| Default 2024 database | `asset\basedata_2024.har` |
-| Default 2024 tariff rates | `asset\baserate_2024.har` |
-| Default baseline metadata | `asset\default_baseline.json` |
+| RunGTAP and model workspaces | `runtime/rungtap/` |
+| GEMPACK conversion utilities | `runtime/gempack/` |
+| GTAPAgg and aggregation project | `runtime/gtapagg/` |
+| Source and registered model assets | `asset/` |
+| Custom aggregation definitions | `config/aggregations/` |
+| Generated and collected artifacts | `result/` |
 
-Verify the bundled runtime:
+Optional environment overrides are supported through `GTAP_RUNGTAP_DIR` or `RUNGTAP_DIR`, `GEMPACK_DIR`, `GTAPAGG_DIR`, `GTAPAGG_PROJECT_DIR`, `GTAPAGG_MAPPING`, `GTAPAGG_INPUT_DIR`, and `GTAP_PKG_FILE`.
 
-```powershell
-python scripts\00_verify_local_runtime.py
-```
+## Bundled Default Profile
 
-A successful check reports `ok: true` for these five groups:
+The checked-in workspace provides one concrete profile so that the architecture can be exercised without assembling a GTAP runtime from scratch:
 
-- RunGTAP programs
-- Aggregated model
-- Default model templates
-- GEMPACK conversion tools
-- GTAPAgg
+| Profile setting | Bundled value |
+| --- | --- |
+| Source database | GTAP 10A, reference year 2014 |
+| Aggregated model | `gtap2015_10x10` |
+| Registered policy baseline | 2024 |
+| Baseline data | `asset/basedata_2024.har` |
+| Baseline tariff rates | `asset/baserate_2024.har` |
+| Baseline metadata | `asset/default_baseline.json` |
+| Agent model service | DeepSeek-compatible chat-completions endpoint |
+| Interface and canonical identifiers | English |
 
-The following environment variables are optional, explicit overrides:
+In this profile, the 2024 baseline was produced by updating the 2014 database with observed macro data. Routine bundled examples therefore start from 2024. This is an implementation default, not a claim that all GTAP Agent projects must use a 2014-to-2024 update.
 
-- `GTAP_RUNGTAP_DIR` or `RUNGTAP_DIR`
-- `GEMPACK_DIR`
-- `GTAPAGG_DIR`
-- `GTAPAGG_PROJECT_DIR`
-- `GTAPAGG_MAPPING`
-- `GTAPAGG_INPUT_DIR`
-- `GTAP_PKG_FILE`
+The current scripts still contain profile-specific names and guardrails—most visibly `build_2024_baseline_update` and policy `base_year` choices of 2014 or 2024. Supporting another database vintage or policy baseline may require a new model profile and small workflow extensions, but it does not change the layered architecture above.
 
-When no override is set, scripts resolve the runtime entirely from this project. They do not modify the system `PATH` or require changes to an existing `C:\GP` installation.
+## Quick Start
 
-## Project Structure
+### Requirements
 
-```text
-GTAPAgent\
-  asset\                         # Source archive, default 2024 baseline, metadata
-  config\aggregations\          # Custom GTAPAgg mappings
-  runtime\
-    rungtap\                     # RunGTAP, local models, solve workspace
-    gempack\                     # har2txt, har2csv, and related tools
-    gtapagg\                     # GTAPAgg and GTAP10A aggregation project
-  scripts\
-    00_verify_local_runtime.py
-    01_aggregate_gtap10a_2014_to_10x10.py
-    02_prepare_2015_economy_shocks.py
-    03_run_rungtap_scenario.py
-    04_fetch_observed_calibration_data.py
-    05_build_2024_baseline_update.py
-    06_apply_policy_shock_modifications.py
-    07_read_gtap_results.py
-    gtap_runtime.py              # Runtime and path resolution
-    gtap_aggregation.py          # Custom aggregation construction and validation
-    gtap_observed_data.py        # Data retrieval, caching, and mapping utilities
-  result\                        # Logs, CMFs, solve results, and summaries
-  tests\                         # Aggregation unit tests
-  web\
-    server.py                    # Lightweight HTTP and NDJSON server
-    agent.py                     # Agent loop, tools, and model client
-    index.html
-    app.js
-    styles.css
-```
+- Windows, because the bundled GTAP tools are Windows executables.
+- Python 3 available as `python`.
+- A DeepSeek API key only when using the conversational web Agent; the CLI workflow does not need an LLM key.
 
-Numbered filenames preserve the main execution order. Shared path, aggregation, and data logic is placed in reusable modules without changing the established workflow.
-
-## Standard Workflow
-
-### 1. Verify the Runtime
+Verify the bundled runtime from the project root:
 
 ```powershell
 python scripts\00_verify_local_runtime.py
 ```
 
-### 2. Prepare the Default Aggregated Model
+Run the automated tests:
 
-Run this only when the default model is missing or must be rebuilt:
+```powershell
+python -m unittest discover -s tests -v
+```
+
+### Start the web Agent
+
+The API key is loaded from `DEEPSEEK_API_KEY`, falling back to the local `scripts/key.txt` file. `DEEPSEEK_MODEL` can override the configured model name.
+
+```powershell
+python web\server.py --host 127.0.0.1 --port 8765
+```
+
+Then open `http://127.0.0.1:8765/`.
+
+Opening `web/index.html` directly shows only a static preview. Agent requests and local workflow tools require the Python server.
+
+## Scenario Lifecycle
+
+GTAP Agent distinguishes model preparation from routine scenario analysis.
+
+### 1. Prepare a model profile
+
+Preparation is required when the aggregation, observed dataset, source database, or registered baseline changes. It is not repeated for every policy scenario.
+
+For the bundled profile, the relevant commands are:
 
 ```powershell
 python scripts\01_aggregate_gtap10a_2014_to_10x10.py
-```
-
-### 3. Fetch and Standardize Observed Data
-
-For routine preparation, the full WITS tariff download can be skipped:
-
-```powershell
 python scripts\04_fetch_observed_calibration_data.py --skip-wits
-```
-
-### 4. Build and Register the Default 2024 Baseline
-
-First generate the 2014-to-2024 baseline-update CMF:
-
-```powershell
 python scripts\05_build_2024_baseline_update.py --write-all-cmfs
-```
-
-Then solve and register it as the project default:
-
-```powershell
 python scripts\03_run_rungtap_scenario.py `
   --cmf result\05_baseline_update\cmf\baseline_update_2014_to_2024.cmf `
   --result-dir result\03_run_baseline_2024 `
   --set-as-default-baseline
 ```
 
-Key outputs:
+The aggregation and observed-data steps should be run only when their outputs are missing or need to be rebuilt. `--set-as-default-baseline` registers a successfully solved model state for later policy scenarios; it must not be used for a policy run.
 
-```text
-asset\basedata_2024.har
-asset\baserate_2024.har
-asset\default_baseline.json
-```
+### 2. Define a policy scenario
 
-### 5. Build a Policy Scenario
-
-This example sets China's import tariff on soybeans from the United States to 20 percent on the 2024 baseline:
+Structured input is resolved against the active aggregation and written to a new CMF plus audit files. For example, using the bundled profile:
 
 ```powershell
 $spec = '{"scenario_name":"China US soybean tariff 20","modifications":[{"type":"bilateral_import_tariff","importer":"China","exporter":"United States","commodity":"soybeans","tariff_percent":20,"rate_mode":"target_rate"}]}'
 python scripts\06_apply_policy_shock_modifications.py --spec-json $spec
 ```
 
-Select the newest policy CMF and run it:
+Supported modification types are:
+
+- `bilateral_import_tariff`
+- `regional_population`
+- `regional_endowment`
+- `regional_productivity`
+
+For tariffs, `target_rate` sets the requested ad valorem rate after conversion from baseline `RTMS` to the GTAP `tms` tax-power change. `rate_change` applies a percentage-point change, while `power_change` applies the tax-power shock directly.
+
+### 3. Solve the scenario
 
 ```powershell
 $policyCmf = Get-ChildItem result\06_policy_modifications\cmf\policy_2024__*.cmf |
@@ -174,20 +213,22 @@ $policyCmf = Get-ChildItem result\06_policy_modifications\cmf\policy_2024__*.cmf
 
 python scripts\03_run_rungtap_scenario.py `
   --cmf $policyCmf `
-  --result-dir result\03_run_policy_soybean
+  --result-dir result\03_run_policy_example
 ```
 
-### 6. Read the Results
+### 4. Read and interpret results
+
+Read the broad structured summary:
 
 ```powershell
-python scripts\07_read_gtap_results.py --result-dir result\03_run_policy_soybean
+python scripts\07_read_gtap_results.py --result-dir result\03_run_policy_example
 ```
 
-Targeted query example:
+Or query a specific solution variable and dimensions:
 
 ```powershell
 python scripts\07_read_gtap_results.py `
-  --result-dir result\03_run_policy_soybean `
+  --result-dir result\03_run_policy_example `
   --view solution `
   --variable qxs `
   --exporter NAMerica `
@@ -195,51 +236,21 @@ python scripts\07_read_gtap_results.py `
   --sector GrainsCrops
 ```
 
-## Default Baseline and Policy Closure
+Available result views include `default`, `solution`, `volume`, `updated_data`, `base_data`, `compare_data`, `welfare`, `log`, `cmf`, and `files`.
 
-The baseline update and policy simulation are separate stages.
+## Aggregation-Aware Design
 
-### 2014-to-2024 Baseline Update
+Natural-language entities are not assumed to exist at country or product level. They are resolved through the current mapping. Under the bundled 10×10 profile, for example:
 
-- Uses the standard GTAP multiregion closure.
-- Adds `Swap avareg(REG) = qgdp(REG);`.
-- Shocks `qgdp(REG)` using observed real GDP growth.
-- Solves `avareg(REG)` endogenously as an implicit regional TFP adjustment.
-- With `--set-as-default-baseline`, registers the successfully solved database and tariff rates as the project default 2024 baseline.
-
-### 2024 Policy Simulation
-
-- Uses `base_year=2024` by default.
-- Starts from `asset\basedata_2024.har` and `asset\baserate_2024.har`.
-- Uses the standard policy closure with endogenous `qgdp`.
-- Does not retain the `avareg=qgdp` swap.
-- Does not repeat baseline macro shocks.
-- Applies only the policy modifications requested by the user.
-
-If the default 2024 baseline is missing, the Agent does not silently run the full baseline workflow. It reports the missing baseline and asks the user for confirmation first.
-
-`--base-year 2014` is an explicit compatibility path. It appends policy statements to the 2014-to-2024 baseline-update CMF and is not the standard policy workflow.
-
-## Custom Regional and Sectoral Aggregation
-
-The default `aggregate_gtap_model` tool takes no arguments and always rebuilds the default 10-by-10 model. Use `aggregate_custom_gtap_model`, or script 01 with structured JSON, when the aggregation must change.
-
-Example: split China from the default `EastAsia` aggregate:
-
-```json
-{
-  "aggregation_name": "china_split",
-  "region_groups": [
-    {
-      "name": "China",
-      "description": "Mainland China",
-      "members": ["chn"]
-    }
-  ]
-}
+```text
+China          -> chn / CHN -> EastAsia
+United States  -> usa / USA -> NAMerica
+soybeans       -> osd       -> GrainsCrops
 ```
 
-CLI example:
+The active aggregate is always the model dimension used in the shock and result interpretation. After a custom aggregation, its mapping becomes authoritative.
+
+Create a custom model by specifying only original GTAP members that should move; unspecified members retain their assignments from the base mapping:
 
 ```powershell
 $aggregation = '{"aggregation_name":"china_split","region_groups":[{"name":"China","description":"Mainland China","members":["chn"]}]}'
@@ -249,108 +260,105 @@ python scripts\01_aggregate_gtap10a_2014_to_10x10.py `
   --model-name gtap2015_china_split
 ```
 
-Rules:
+Custom models are isolated from the bundled `gtap2015_10x10` directory. Aggregate names are limited to 12 characters, descriptions to 30 characters, and replacement of an existing custom model requires `--overwrite`.
 
-- `region_groups` and `sector_groups` list only original GTAP members that should move.
-- Unlisted members retain their default assignments.
-- Prefer original GTAP codes or exact English names, such as `chn`, `usa`, and `osd`.
-- Aggregate names are limited to 12 characters and descriptions to 30 characters.
-- The default `gtap2015_10x10` model is protected; custom aggregations use independent model directories.
-- Existing mappings and models are not replaced unless `--overwrite` is explicit.
+Aggregation changes model dimensions, so observed-data mapping and any dimension-specific baseline must be regenerated for the new model. GTAP Agent does not silently replace the registered default baseline after custom aggregation.
 
-Key outputs:
+## Baselines and Closures
 
-```text
-config\aggregations\china_split.txt
-runtime\rungtap\gtap2015_china_split\aggregation_mapping.txt
-runtime\rungtap\gtap2015_china_split\aggregation_metadata.json
-```
+A baseline is a registered model state used by subsequent scenarios; it is not the identity of the Agent architecture.
 
-Changing the aggregation changes the model dimensions. The old 2024 baseline is therefore incompatible with the new model. Preparation must be repeated in this order:
-
-1. Run `04_fetch_observed_calibration_data.py --mapping-file ...` with the new mapping.
-2. Build a baseline-update CMF using the new `model_name`.
-3. Solve the baseline using the same `model_name`.
-4. Register it as the new default 2024 baseline only after user confirmation.
-
-## Agent Tools
-
-| Tool | Purpose | Routine use |
-| --- | --- | --- |
-| `aggregate_gtap_model` | Rebuild the default 10-by-10 model | No; one-time setup |
-| `aggregate_custom_gtap_model` | Build an independent custom mapping and model | When the user explicitly changes aggregation |
-| `fetch_observed_data` | Fetch and standardize GDP, population, and tariffs | No; setup or data refresh |
-| `build_2024_baseline_update` | Generate a pre-policy baseline-update CMF | Baseline preparation |
-| `modify_shock_cmf` | Generate a structured policy CMF | Yes |
-| `run_gtap_scenario` | Solve through RunGTAP/GEMPACK | When the user requests a run |
-| `read_gtap_results` | Read and interpret structured results | When the user requests interpretation |
-
-The Agent does not expose an arbitrary shell tool. Every tool maps to a registered project script, and user-provided paths are restricted to the project workspace.
-
-## Web Agent
-
-The API key is loaded in this order:
-
-1. `DEEPSEEK_API_KEY` environment variable
-2. Local `scripts\key.txt` file
-
-Start the server:
-
-```powershell
-python web\server.py --host 127.0.0.1 --port 8765
-```
-
-Open:
+The bundled historical-update recipe uses the standard GTAP multiregion closure plus:
 
 ```text
-http://127.0.0.1:8765/
+Swap avareg(REG) = qgdp(REG);
 ```
 
-The web interface, quick scenarios, and Agent responses are in English. The `Execution Trace` displays tool names, arguments, status, exit codes, duration, log tails, and summary files.
+Observed real GDP growth is applied through `qgdp`, and `avareg` is solved endogenously as an implicit regional productivity adjustment. This is a pre-policy database update.
 
-Opening `web\index.html` directly provides only a static preview. Model API calls and local Python tools require the local server.
+Bundled 2024 policy scenarios instead use the standard policy closure:
+
+- `qgdp` is endogenous.
+- The `avareg=qgdp` swap is removed.
+- Historical macro shocks are not repeated.
+- Only the requested policy modifications are applied.
+
+If the registered baseline is absent, the Agent reports the missing preparation step rather than silently constructing and registering a new baseline. The explicit `--base-year 2014` option is a compatibility path for the bundled profile, not the normal policy workflow.
+
+## Repository Layout
+
+```text
+GTAPAgent/
+  asset/                         source archives and registered model assets
+  config/aggregations/           reusable custom aggregation mappings
+  runtime/
+    rungtap/                     RunGTAP programs, models, and shared work area
+    gempack/                     HAR/SOL conversion utilities
+    gtapagg/                     GTAPAgg and aggregation project
+  scripts/
+    00_verify_local_runtime.py
+    01_aggregate_gtap10a_2014_to_10x10.py
+    02_prepare_2015_economy_shocks.py
+    03_run_rungtap_scenario.py
+    04_fetch_observed_calibration_data.py
+    05_build_2024_baseline_update.py
+    06_apply_policy_shock_modifications.py
+    07_read_gtap_results.py
+    gtap_runtime.py
+    gtap_aggregation.py
+    gtap_observed_data.py
+  result/                        generated inputs, logs, solutions, and summaries
+  tests/                         workflow unit tests
+  web/                           browser UI, transport server, and Agent control
+```
+
+More detailed references are available in [the script reference](scripts/README.md), [the web architecture guide](web/README.md), [the runtime guide](runtime/README.md), and [the aggregation guide](config/aggregations/README.md).
 
 ## Data Sources
 
-- GDP: World Bank API, `NY.GDP.MKTP.KD`
-- Population: UN WPP API or local file, with World Bank `SP.POP.TOTL` as fallback
-- Tariffs: WITS SDMX API, `AHS-WGHTD-AVRG`
+The bundled observed-data adapter supports:
 
-A full WITS download proceeds incrementally by reporter-year and can be slow. Routine demonstrations may use `--skip-wits` and cached data. Run the full download when tariff calibration must be refreshed.
+- World Bank real GDP: `NY.GDP.MKTP.KD`
+- UN WPP population, with World Bank `SP.POP.TOTL` as fallback
+- WITS weighted-average applied tariffs: `AHS-WGHTD-AVRG`
 
-## Result Directories
+Responses are cached under `result/04_observed_data`, then standardized into the active regional/sectoral mapping. Full WITS retrieval is incremental and can be slow; `--skip-wits` is useful when tariffs are not being refreshed.
+
+## Outputs and Audit Trail
 
 | Directory | Contents |
 | --- | --- |
-| `result\01_aggregation` | Aggregation logs, summary, and wholejob output |
-| `result\02_shocks` | Legacy 2015 smoke-test scenario |
-| `result\03_run*` | Collected RunGTAP/GEMPACK solve outputs |
-| `result\04_observed_data` | Raw cache, standardized data, and manifest |
-| `result\05_baseline_update` | Baseline targets, CMFs, and summary |
-| `result\06_policy_modifications` | Policy CMFs, resolved JSON/CSV, and summary |
-| `result\07_result_reads` | Latest structured result read |
+| `result/01_aggregation/` | Aggregation logs, mapping metadata, and summary |
+| `result/02_shocks/` | Legacy smoke-test artifacts |
+| `result/03_run*/` | Collected CMFs, logs, HAR files, solution files, and run summaries |
+| `result/04_observed_data/` | Raw cache, standardized data, mappings, and manifest |
+| `result/05_baseline_update/` | Baseline targets, CMFs, and summary |
+| `result/06_policy_modifications/` | Policy CMFs and resolved JSON/CSV specifications |
+| `result/07_result_reads/` | Latest structured result query |
 
-## Testing and Validation
+The web interface exposes the same audit trail through its Execution Trace: tool name, validated arguments, status, exit code, duration, log tail, and returned summary files.
 
-Run unit tests:
+## Validation
 
 ```powershell
+python scripts\00_verify_local_runtime.py
 python -m unittest discover -s tests -v
-```
-
-Check Python syntax:
-
-```powershell
 python -m py_compile web\agent.py web\server.py
 Get-ChildItem scripts\*.py | ForEach-Object { python -m py_compile $_.FullName }
 ```
 
-Current automated tests cover custom aggregation: splitting a region, splitting a sector, rejecting duplicate member assignments, and rejecting unsafe names. Run `00_verify_local_runtime.py` before any production scenario.
+Current unit tests focus on custom aggregation: region and sector splits, duplicate-member rejection, and unsafe-name rejection. Runtime verification should be performed before production scenarios.
 
-## Known Limitations
+## Current Limitations
 
-- The 2024 baseline update is an approximate historical calibration, not a full recursive-dynamic projection or formal historical decomposition.
-- Current WITS tariff calibration is an all-products weighted average; a complete product-classification-to-GTAP-sector mapping is not yet implemented.
-- The UN WPP API may require a token. Population data falls back to the World Bank when neither a token nor a local WPP file is available.
-- Country and commodity detail is limited by the active aggregation. The Agent must disclose the actual aggregation used in its interpretation.
-- Formal policy research still requires expert review of the closure, shock definition, tariff conversion, data sources, and interpretation.
+- The bundled Windows runtime and model assets are not a cross-platform GTAP distribution.
+- The bundled 2014-to-2024 update is an approximate historical calibration, not a recursive-dynamic projection or formal historical decomposition.
+- Current WITS calibration uses an all-products weighted average; complete product-classification-to-GTAP-sector mapping is not implemented.
+- UN WPP access may require a token; population falls back to the World Bank when no token or local WPP file is supplied.
+- Results are constrained by the active aggregation and cannot support detail absent from the model dimensions.
+- In-memory web sessions are process-local and are not a persistent multi-user store.
+- Formal policy research still requires expert review of the aggregation, closure, shock definition, tariff conversion, source data, and interpretation.
+
+## License and Data
+
+Project code is released under the repository `LICENSE`. GTAP databases, GEMPACK/RunGTAP components, and related runtime files may be governed by their own licenses. Do not publish private `licen.gem` or private GTAPAgg license files.
