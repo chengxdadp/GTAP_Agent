@@ -13,6 +13,14 @@ from typing import Any
 
 from gtap_observed_data import PROJECT_DIR, RESULT_DIR, STANDARDIZED_DIR, read_csv
 from gtap_runtime import RUNGTAP_DIR, find_executable
+from gtap_scenario import (
+    GTAP_CHECK_ON_READ_LINES,
+    build_scenario_cmf,
+    extract_cmf_context,
+    load_aggregation_aliases,
+    resolve_aggregate,
+    resolve_baseline_context,
+)
 
 
 POLICY_DIR = RESULT_DIR / "06_policy_modifications"
@@ -47,22 +55,27 @@ def parser() -> argparse.ArgumentParser:
         description="Apply structured, conversational policy modifications to an existing GTAP CMF."
     )
     argument_parser.add_argument(
-        "--base-year",
-        type=int,
-        default=2024,
-        choices=[2014, 2024],
-        help="Baseline year the policy is applied on. 2024 (default) uses the project's default 2024 baseline database with a standard policy closure. 2014 applies the policy on top of the 2014->2024 baseline-update CMF (legacy escape hatch).",
+        "--baseline-id",
+        choices=["original_2014", "registered_2024"],
+        help="Explicit scenario input baseline. Required unless deprecated --base-year is supplied.",
     )
     argument_parser.add_argument(
         "--base-cmf",
         type=Path,
         default=None,
-        help="Legacy 2014-base only: existing baseline-update CMF to copy and extend. Defaults to the latest 2014->2024 baseline-update CMF.",
+        help="Optional CMF returned by modify_gtap_closure.py or an earlier shock modification. Its embedded baseline must match --baseline-id.",
+    )
+    argument_parser.add_argument(
+        "--base-year",
+        type=int,
+        choices=[2014, 2024],
+        default=None,
+        help=argparse.SUPPRESS,
     )
     argument_parser.add_argument(
         "--model-name",
         default=None,
-        help="RunGTAP model for a 2024 policy. Defaults to the model recorded in asset/default_baseline.json.",
+        help="RunGTAP model. registered_2024 must use the model recorded in asset/default_baseline.json.",
     )
     argument_parser.add_argument(
         "--output-cmf",
@@ -183,7 +196,7 @@ def load_region_aliases() -> tuple[dict[str, str], set[str]]:
             add_alias(aliases, row.get(field), region)
 
     china_target = aliases.get(normalize_key("chn"), "EastAsia")
-    usa_target = aliases.get(normalize_key("usa"), "NAMerica")
+    usa_target = aliases.get(normalize_key("usa"), "NAmerica")
     manual_aliases = {
         "china": china_target,
         "chn": china_target,
@@ -505,7 +518,7 @@ def build_policy_cmf_2024(scenario_name: str, resolved: list[dict[str, Any]], mo
         "! Base database: project default 2024 baseline (asset/basedata_2024.har), produced by the 2014->2024 baseline update run.",
         "! Closure: standard multiregion GE policy closure. qgdp is endogenous so GDP responds to the policy; no avareg=qgdp swap and no baseline macro shocks.",
         f"! Model directory: {model_dir}",
-        "check-on-read all = warn ;",
+        *GTAP_CHECK_ON_READ_LINES,
         f"aux files = {RUNGTAP_DIR}\\GTAP;",
         f"file gtapSETS = {model_dir}\\sets.har;",
         f"file gtapDATA = {BASELINE_2024_DATA};",
@@ -600,6 +613,13 @@ def apply_replacements(base_text: str, resolved: list[dict[str, Any]]) -> tuple[
 def write_resolved_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     fieldnames = [
         "type",
+        "code",
+        "description",
+        "input_dimensions",
+        "dimensions",
+        "requested_value",
+        "applied_value",
+        "value_mode",
         "importer_input",
         "exporter_input",
         "commodity_input",
@@ -630,6 +650,279 @@ def public_item(item: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in item.items() if key != "match_pattern"}
 
 
+SHOCK_VARIABLES: dict[str, dict[str, Any]] = {
+    "tms": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral import-tax power"},
+    "tm": {"dimensions": ["commodity", "importer"], "description": "source-generic import-tax power"},
+    "txs": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral export-tax/subsidy power"},
+    "tx": {"dimensions": ["commodity", "exporter"], "description": "destination-generic export-tax/subsidy power"},
+    "to": {"dimensions": ["commodity", "region"], "description": "commodity output/income-tax power"},
+    "tp": {"dimensions": ["region"], "description": "uniform private-consumption-tax shift"},
+    "pop": {"dimensions": ["region"], "description": "regional population"},
+    "qo": {"dimensions": ["factor", "region"], "description": "regional factor-endowment supply"},
+    "aosec": {"dimensions": ["sector"], "description": "worldwide sector output-augmenting technology"},
+    "aoreg": {"dimensions": ["region"], "description": "regional output-augmenting technology"},
+    "aoall": {"dimensions": ["sector", "region"], "description": "sector-region output-augmenting technology"},
+    "avasec": {"dimensions": ["sector"], "description": "worldwide sector value-added technology"},
+    "avareg": {"dimensions": ["region"], "description": "regional value-added technology"},
+    "afcom": {"dimensions": ["commodity"], "description": "worldwide intermediate-input technology"},
+    "afsec": {"dimensions": ["sector"], "description": "sector-wide intermediate-input technology"},
+    "afreg": {"dimensions": ["region"], "description": "regional intermediate-input technology"},
+    "afall": {"dimensions": ["commodity", "sector", "region"], "description": "input-sector-region intermediate technology"},
+    "afecom": {"dimensions": ["factor"], "description": "worldwide factor-augmenting technology"},
+    "afesec": {"dimensions": ["sector"], "description": "sector-wide factor-augmenting technology"},
+    "afereg": {"dimensions": ["region"], "description": "regional factor-augmenting technology"},
+    "afeall": {"dimensions": ["factor", "sector", "region"], "description": "factor-sector-region augmenting technology"},
+    "ams": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral import-augmenting technology"},
+    "atf": {"dimensions": ["commodity"], "description": "commodity-specific international-shipping technology"},
+    "ats": {"dimensions": ["exporter"], "description": "origin-specific international-shipping technology"},
+    "atd": {"dimensions": ["importer"], "description": "destination-specific international-shipping technology"},
+    "qgdp": {"dimensions": ["region"], "description": "regional real GDP target; requires gdp_target_tfp closure swap"},
+    "qcgds": {"dimensions": ["region"], "description": "regional gross-investment quantity; requires fixed_regional_investment closure swap"},
+}
+
+SEMANTIC_SHOCK_CODES = {
+    "bilateralimporttariff": "tms",
+    "sourcegenericimporttariff": "tm",
+    "bilateralexporttax": "txs",
+    "destinationgenericexporttax": "tx",
+    "outputtax": "to",
+    "uniformprivateconsumptiontax": "tp",
+    "regionalpopulation": "pop",
+    "factorendowment": "qo",
+    "regionalendowment": "qo",
+    "outputtechnology": "aoall",
+    "regionalproductivity": "aoall",
+    "importaugmentingtechnology": "ams",
+    "intermediateinputtechnology": "afall",
+    "factoraugmentingtechnology": "afeall",
+    "gtapvariable": "",
+}
+
+
+def explicit_shock_pattern(code: str, rendered_arguments: list[str]) -> str:
+    arguments = r"\s*,\s*".join(re.escape(value) for value in rendered_arguments)
+    return rf"(?im)^\s*Shock\s+{re.escape(code)}\(\s*{arguments}\s*\)\s*=.*?;\s*$"
+
+
+def _dimension_value(
+    dimension: str,
+    modification: dict[str, Any],
+    aliases: dict[str, tuple[dict[str, str], set[str]]],
+) -> tuple[str, str]:
+    field_aliases = {
+        "commodity": ["commodity", "input", "gtap_sector"],
+        "sector": ["sector", "industry", "gtap_sector"],
+        "factor": ["factor", "endowment"],
+        "region": ["region", "gtap_region"],
+        "exporter": ["exporter", "source"],
+        "importer": ["importer", "destination"],
+    }
+    raw = next((modification.get(field) for field in field_aliases[dimension] if modification.get(field) is not None), None)
+    alias_dimension = "region" if dimension in {"region", "exporter", "importer"} else "sector" if dimension in {"commodity", "sector"} else "factor"
+    return resolve_aggregate(raw, *aliases[alias_dimension], dimension)
+
+
+def resolve_explicit_modification(
+    modification: dict[str, Any],
+    aliases: dict[str, tuple[dict[str, str], set[str]]],
+    rtms_rates: dict[tuple[str, str, str], float],
+    closure_swaps: set[str],
+) -> dict[str, Any]:
+    raw_type = normalize_key(modification.get("type") or "gtap_variable")
+    code = str(modification.get("code") or modification.get("variable") or SEMANTIC_SHOCK_CODES.get(raw_type) or "").lower()
+    if code not in SHOCK_VARIABLES:
+        raise ValueError(f"Unsupported GTAP shock code {code!r}. Allowed: {', '.join(SHOCK_VARIABLES)}")
+
+    spec = SHOCK_VARIABLES[code]
+    resolved_dimensions: dict[str, str] = {}
+    input_dimensions: dict[str, str] = {}
+    uniform = False
+    for dimension in spec["dimensions"]:
+        if raw_type == "regionalendowment" and dimension == "factor":
+            resolved, raw = "ENDW_COMM", "all endowments"
+            uniform = True
+        elif raw_type == "regionalproductivity" and dimension == "sector":
+            resolved, raw = "PROD_COMM", "all production sectors"
+            uniform = True
+        else:
+            resolved, raw = _dimension_value(dimension, modification, aliases)
+        resolved_dimensions[dimension] = resolved
+        input_dimensions[dimension] = raw
+
+    raw_value = modification.get("value")
+    if raw_value is None:
+        raw_value = modification.get("tariff_percent") if code == "tms" else modification.get("shock_percent")
+    value = parse_number(raw_value, "value")
+    value_mode = str(modification.get("value_mode") or modification.get("rate_mode") or "percent_change").strip().lower()
+    base_rate = math.nan
+    target_rate = math.nan
+    applied_value = value
+    if code == "tms":
+        aliases_for_mode = {"percent_change": "power_change", "direct": "power_change"}
+        tariff_mode = normalize_rate_mode(aliases_for_mode.get(value_mode, value_mode))
+        if tariff_mode != "power_change":
+            key = rate_lookup_key(
+                resolved_dimensions["commodity"],
+                resolved_dimensions["exporter"],
+                resolved_dimensions["importer"],
+            )
+            if key not in rtms_rates:
+                raise ValueError(f"No baseline RTMS rate for {resolved_dimensions}")
+            base_rate = rtms_rates[key]
+            applied_value, target_rate = tariff_power_change(base_rate, value, tariff_mode)
+        value_mode = tariff_mode
+    elif value_mode not in {"percent_change", "power_change"}:
+        raise ValueError(f"{code} supports value_mode=percent_change only; got {value_mode!r}")
+
+    arguments: list[str] = []
+    rendered_arguments: list[str] = []
+    for dimension in spec["dimensions"]:
+        value_for_dimension = resolved_dimensions[dimension]
+        arguments.append(value_for_dimension)
+        rendered_arguments.append(value_for_dimension if value_for_dimension in {"ENDW_COMM", "PROD_COMM"} else f'"{value_for_dimension}"')
+
+    if code == "qgdp":
+        expected = f'Swap avareg("{resolved_dimensions["region"]}") = qgdp("{resolved_dimensions["region"]}");'
+        if expected not in closure_swaps:
+            raise ValueError(f"qgdp is endogenous for {resolved_dimensions['region']}; apply gdp_target_tfp in modify_gtap_closure first")
+    if code == "avareg":
+        swapped = f'Swap avareg("{resolved_dimensions["region"]}") = qgdp("{resolved_dimensions["region"]}");'
+        if swapped in closure_swaps:
+            raise ValueError(
+                f"avareg is endogenous for {resolved_dimensions['region']} after gdp_target_tfp; shock qgdp or remove that closure patch"
+            )
+    if code == "qcgds":
+        expected = f'Swap cgdslack("{resolved_dimensions["region"]}") = qcgds("{resolved_dimensions["region"]}");'
+        if expected not in closure_swaps:
+            raise ValueError(
+                f"qcgds is endogenous for {resolved_dimensions['region']}; apply fixed_regional_investment in modify_gtap_closure first"
+            )
+
+    uniform_text = "uniform " if uniform else ""
+    shock_line = f"Shock {code}({','.join(rendered_arguments)}) = {uniform_text}{applied_value:.6f};"
+    return {
+        "type": modification.get("type") or "gtap_variable",
+        "code": code,
+        "description": spec["description"],
+        "input_dimensions": input_dimensions,
+        "dimensions": resolved_dimensions,
+        "requested_value": value,
+        "applied_value": applied_value,
+        "value_mode": value_mode,
+        "base_tariff_percent": None if math.isnan(base_rate) else base_rate,
+        "target_tariff_percent": None if math.isnan(target_rate) else target_rate,
+        "shock_line": shock_line,
+        "note": modification.get("note") or "",
+        "match_pattern": explicit_shock_pattern(code, rendered_arguments),
+    }
+
+
+def replace_context_line(text: str, context: dict[str, Any]) -> str:
+    line = "! GTAP_AGENT_CONTEXT " + json.dumps(context, ensure_ascii=True, separators=(",", ":"))
+    if re.search(r"(?m)^! GTAP_AGENT_CONTEXT .*$", text):
+        return re.sub(r"(?m)^! GTAP_AGENT_CONTEXT .*$", lambda _: line, text)
+    return line + "\n" + text
+
+
+def explicit_policy_block(scenario_name: str, source_cmf: Path | None, resolved: list[dict[str, Any]]) -> str:
+    lines = [
+        "! Structured shock modifications generated by scripts/06_apply_policy_shock_modifications.py",
+        f"! Scenario: {scenario_name}",
+        f"! Source CMF: {source_cmf if source_cmf else 'standard policy closure generated for this baseline'}",
+    ]
+    for index, item in enumerate(resolved, start=1):
+        lines.extend(
+            [
+                f"! Shock {index}: {item['code']} — {item['description']}",
+                f"! Dimensions: {json.dumps(item['dimensions'], ensure_ascii=False)}",
+                f"! Requested value: {item['requested_value']}; mode: {item['value_mode']}",
+            ]
+        )
+        if item.get("note"):
+            lines.append(f"! Note: {item['note']}")
+        if item.get("replaced_existing"):
+            lines.append(f"! Replaced existing matching shock: {item['shock_line']}")
+        else:
+            lines.append(item["shock_line"])
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def run_explicit_policy(args: argparse.Namespace, spec: dict[str, Any], modifications: list[dict[str, Any]], scenario_name: str) -> dict[str, Any]:
+    baseline_id = str(spec.get("baseline_id") or args.baseline_id or "").strip()
+    if not baseline_id and args.base_year:
+        baseline_id = "original_2014" if args.base_year == 2014 else "registered_2024"
+    if not baseline_id:
+        raise ValueError("baseline_id is required: choose original_2014 or registered_2024")
+    model_name = args.model_name or spec.get("model_name")
+    baseline = resolve_baseline_context(baseline_id, model_name)
+    aliases = load_aggregation_aliases(baseline["aggregation_mapping"])
+
+    source_cmf_value = args.base_cmf or (Path(str(spec["base_cmf"])) if spec.get("base_cmf") else None)
+    source_cmf = resolve_project_path(source_cmf_value) if source_cmf_value else None
+    if source_cmf:
+        if not source_cmf.is_file():
+            raise FileNotFoundError(f"Base CMF not found: {source_cmf}")
+        base_text = source_cmf.read_text(encoding="utf-8", errors="replace").rstrip()
+        context = extract_cmf_context(base_text)
+        if context.get("baseline_id") != baseline_id:
+            raise ValueError(
+                f"Base CMF uses baseline_id={context.get('baseline_id')!r}; requested baseline_id={baseline_id!r}"
+            )
+        if context.get("model_name") and context["model_name"] != baseline["model_name"]:
+            raise ValueError(f"Base CMF model {context['model_name']!r} does not match {baseline['model_name']!r}")
+    else:
+        base_text, context = build_scenario_cmf(scenario_name, baseline)
+        base_text = base_text.rstrip()
+
+    rtms_rates = load_rtms_rates(Path(baseline["baserate"]))
+    closure_swaps = set(context.get("closure_swaps") or [])
+    resolved = [resolve_explicit_modification(item, aliases, rtms_rates, closure_swaps) for item in modifications]
+    base_text, resolved = apply_replacements(base_text, resolved)
+    context = {
+        **baseline,
+        **context,
+        "scenario_name": scenario_name,
+        "shocks": [*(context.get("shocks") or []), *[public_item(item) for item in resolved]],
+    }
+    output_cmf = resolve_output_cmf(args, spec, scenario_name, f"policy__{baseline_id}")
+    output_cmf.parent.mkdir(parents=True, exist_ok=True)
+    final_text = replace_context_line(base_text, context) + "\n\n" + explicit_policy_block(scenario_name, source_cmf, resolved) + "\n"
+    output_cmf.write_text(final_text, encoding="utf-8")
+
+    resolved_json = output_cmf.with_suffix(".resolved.json")
+    payload = {
+        "ok": True,
+        "scenario_name": scenario_name,
+        "baseline": baseline,
+        "closure_id": context.get("closure_id"),
+        "closure_swaps": sorted(closure_swaps),
+        "output_cmf": str(output_cmf),
+        "resolved_json": str(resolved_json),
+        "modifications": [public_item(item) for item in resolved],
+    }
+    resolved_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    write_resolved_csv(output_cmf.with_suffix(".resolved.csv"), [public_item(item) for item in resolved])
+    POLICY_DIR.mkdir(parents=True, exist_ok=True)
+    SUMMARY_PATH.write_text(
+        "\n".join(
+            [
+                "Policy modification CMF created",
+                f"Scenario: {scenario_name}",
+                f"Baseline ID: {baseline_id}",
+                f"Baseline data: {baseline['basedata']}",
+                f"Model: {baseline['model_name']}",
+                f"Closure: {context.get('closure_id')}",
+                f"Output CMF: {output_cmf}",
+                *[f"- {item['shock_line']}" for item in resolved],
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return payload
+
+
 def main() -> None:
     args = parser().parse_args()
     spec = load_policy_spec(args.spec_json)
@@ -639,21 +932,8 @@ def main() -> None:
     if not all(isinstance(item, dict) for item in modifications):
         raise ValueError("Each policy modification must be a JSON object.")
 
-    base_year = int(spec.get("base_year") or args.base_year)
     scenario_name = str(spec.get("scenario_name") or "policy modification")
-
-    region_aliases, regions = load_region_aliases()
-    sector_aliases, sectors = load_sector_aliases()
-
-    if base_year == 2024:
-        resolved_payload = run_policy_on_2024_baseline(
-            args, spec, modifications, scenario_name, region_aliases, regions, sector_aliases, sectors
-        )
-    else:
-        resolved_payload = run_policy_on_2014_baseline(
-            args, spec, modifications, scenario_name, region_aliases, regions, sector_aliases, sectors
-        )
-
+    resolved_payload = run_explicit_policy(args, spec, modifications, scenario_name)
     print(json.dumps(resolved_payload, ensure_ascii=False, indent=2))
 
 

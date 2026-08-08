@@ -1,0 +1,5 @@
+# OpenRouter is accessed through the OpenAI-compatible Python SDK.
+openai>=1.68,<3
+
+# Required when a local UN WPP .xlsx/.xlsm workbook is supplied.
+openpyxl>=3.1,<4

@@ -9,10 +9,10 @@ import subprocess
 import sys
 import threading
 import time
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any
+
+from openai import OpenAI
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -22,58 +22,148 @@ AGGREGATION_CONFIG_DIR = PROJECT_DIR / "config" / "aggregations"
 KEY_FILE = SCRIPTS_DIR / "key.txt"
 STANDARDIZED_DIR = RESULT_DIR / "04_observed_data" / "standardized"
 
-DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
-DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro")
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+from gtap_aggregation import normalize_label, parse_mapping_sections, split_member, split_target  # noqa: E402
+from gtap_scenario import extract_cmf_context, read_default_baseline_metadata  # noqa: E402
+
+OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-5.6-luna")
 MAX_TOOL_ROUNDS = 8
 
 SESSIONS: dict[str, list[dict[str, Any]]] = {}
 SYSTEM_PROMPT_CACHE: str | None = None
 TOOL_EXECUTION_LOCK = threading.Lock()
+_OPENROUTER_CLIENT: OpenAI | None = None
 
 
-BASE_SYSTEM_PROMPT = """You are the agent for the GTAP automation workflow. Understand the user's objective, select the appropriate tools, inspect their results, and provide concise, reliable responses in English.
+BASE_SYSTEM_PROMPT = """You are the agent for the GTAP automation workflow. Understand the user's objective, select the registered tools, inspect their outputs, and give concise evidence-based responses in English.
 
-Operating procedure:
-- You receive the full conversation history, registered tools, user instructions, tool calls, and tool results.
-- When the task requires running project scripts or creating, modifying, or solving a CMF, independently select one or more tools. After each result, decide whether to summarize, continue, correct the arguments, retry, or stop.
-- Never invent script results, file paths, or model conclusions. Support important conclusions with returned stdout, stderr, summary files, or result paths.
-- If the user asks only to generate a file, do not also run RunGTAP. Call run_gtap_scenario only when the user asks to solve or run the scenario.
-- After RunGTAP, if the user asks for interpretation, impacts, comparisons, or details about a region or sector, call read_gtap_results and answer from its structured JSON output.
-- If a tool fails, inspect the failure and retry only when the arguments can be corrected. Otherwise identify the failed tool, explain the cause, and provide the relevant log or summary path.
+Core workflow:
+- A GTAP experiment has an aggregation, an explicit input baseline, a closure, one or more shocks, a solve, and result queries.
+- Never invent results, paths, aggregate mappings, GTAP codes, or dimensions. Use returned artifacts and structured output.
+- File generation, solving, and follow-up result querying are separate. Run only when requested.
 
-Baseline year and two-stage workflow (important):
-- The original GTAP10A database year is 2014. Policy analysis uses 2024 by default, so the database must first be updated and registered as the project's default 2024 baseline. This is a one-time setup step.
-- Updating the default baseline to 2024 has two stages. First call build_2024_baseline_update to generate the 2014-to-2024 baseline-update CMF. This is not a policy shock: it updates the database to a 2024 baseline using the standard GTAP closure plus Swap avareg(REG)=qgdp(REG), shocks qgdp(REG), and solves avareg as implicit TFP. Then call run_gtap_scenario with set_as_default_baseline=true. A successful solve registers the solved database as asset/basedata_2024.har and the updated tariff rates as asset/baserate_2024.har for subsequent policy scenarios.
-- For policy analysis, including tariffs, population, endowments, or productivity, call modify_shock_cmf with the default base_year=2024. It creates a standard-policy-closure CMF on the project's default 2024 baseline: qgdp is endogenous, GDP responds to the policy, there is no avareg=qgdp swap, and baseline macro shocks are not repeated.
-- Critical gate: if modify_shock_cmf reports that the 2024 baseline has not been prepared because asset/basedata_2024.har is missing, do not silently run the baseline workflow. Tell the user: "The project does not yet have a default 2024 baseline. Would you like me to prepare it now?" Only after confirmation may you run build_2024_baseline_update, then run_gtap_scenario(set_as_default_baseline=true), and then return to the policy scenario.
-- Use base_year=2014 only when the user explicitly asks to apply a shock to the 2014 database or start from 2014. That path appends policy statements to the 2014-to-2024 baseline-update CMF and reads tariff rates from the 2014 baserate.har.
+Decision protocol before the first tool call:
+1. Classify the request as preparation, a routine scenario, a result-only query, clarification, or an unsupported model change.
+2. Resolve the requested aggregation and explicit baseline. Words such as current, existing, retain, keep, or unchanged mean reuse the active aggregation; they never authorize an aggregation tool call.
+3. Check baseline/model compatibility before any state-changing preparation. original_2014 is model-local and can be used with a newly aggregated model. registered_2024 is bound to the model recorded in baseline metadata; a new aggregation cannot reuse it without rebuilding and explicitly registering compatible baseline assets. If that work is forbidden or not authorized, ask one focused question before changing aggregation or writing files.
+4. Decide whether the standard policy closure is unchanged or a documented patch is required. For the unchanged standard closure, do not call modify_gtap_closure: call modify_shock_cmf directly with the explicit baseline and omit base_cmf. Call modify_gtap_closure only for a non-empty supported patch, then pass its exact returned output_cmf as base_cmf.
+5. Put all compatible shocks for the experiment in one modify_shock_cmf call. Use type=gtap_variable, select the whitelisted code whose schema matches the intended scope, and pass only the dimensions exposed by that code branch.
+6. Pass the exact output_cmf returned by the preceding tool to run_gtap_scenario. Never guess, shorten, or reconstruct artifact paths.
+7. Treat the automatic run report as the default result response. Use read_gtap_results only for exact requested cells or sources absent from that report, and pass the exact result_dir returned by the run tool.
 
-Policy modifications:
-- modify_shock_cmf accepts a modifications array and defaults to base_year=2024. Supported entries are:
-  1. Bilateral import tariff: {"type":"bilateral_import_tariff","importer":"China","exporter":"United States","commodity":"soybeans","tariff_percent":20,"rate_mode":"target_rate"}
-  2. Regional population: {"type":"regional_population","region":"EastAsia","shock_percent":1.2}
-  3. Regional endowment: {"type":"regional_endowment","region":"EastAsia","shock_percent":2.0}
-  4. Regional productivity: {"type":"regional_productivity","region":"EastAsia","shock_percent":1.5}
-- The default rate_mode is target_rate, which sets the bilateral ad valorem import tariff to the requested target. The tool reads the baseline RTMS rate and converts it to the corresponding percentage change in the GTAP tms tax power. Use rate_change only when the user explicitly requests an increase or decrease in percentage points.
-- Bilateral import tariffs are written as tms(commodity, exporter, importer). Regional macro modifications are written as pop(REG), qo(ENDW_COMM,REG), or aoall(PROD_COMM,REG).
-- Map countries, regions, and commodities in natural-language requests to the active aggregate regions and sectors shown in the Current GTAP aggregation context below. Do not assume country-level or HS-product-level detail.
-- In the final response, state the aggregation actually used, for example China -> EastAsia, United States -> NAMerica, and soybeans -> GrainsCrops.
+Explicit baseline rule:
+- original_2014 means the original basedata.har and baserate.har in the selected RunGTAP model.
+- registered_2024 means asset/basedata_2024.har and asset/baserate_2024.har registered in asset/default_baseline.json.
+- Never use the ambiguous word base as a tool value and never infer a baseline for closure, shock, or run operations. If the user's intended baseline is unclear, ask whether to use original_2014 or registered_2024 before calling a scenario tool.
+- build_2024_baseline_update is an optional historical-preparation recipe, not the definition of GTAP Agent. Use it only when the user explicitly requests construction or refresh of the registered 2024 baseline.
 
-Custom aggregation:
-- aggregate_gtap_model always rebuilds the default 10-by-10 model from the project's default mapping. Do not invent arguments for it.
-- When the user explicitly asks to split, merge, or otherwise change regional or sectoral aggregation, call aggregate_custom_gtap_model. In region_groups and sector_groups, list only the original GTAP members that must move; unlisted members keep their default assignments. Prefer original GTAP codes or exact names, such as chn, usa, and osd.
-- A custom aggregation creates an independent mapping and model without overwriting the default 10-by-10 model. After the tool returns mapping_file and model_name, pass mapping_file to fetch_observed_data and model_name to build_2024_baseline_update and run_gtap_scenario.
-- An existing default 2024 baseline is dimensionally incompatible with a new aggregation. Do not automatically replace the project default baseline. Explain that the observed-data mappings and 2024 baseline must be regenerated, and wait for user confirmation before running with set_as_default_baseline=true.
+Local modifications:
+- Aggregation tools start from the active mapping in the context below. Move only the requested original regions/sectors; unspecified members and factor aggregation stay unchanged.
+- aggregate_gtap_model is not a discovery, validation, closure, or CMF-generation tool. Call it only when the user explicitly asks to rebuild the bundled model or a required bundled model artifact is reported missing.
+- Never set overwrite=true merely to recover from a name collision. Unless the user explicitly authorized replacement of that exact custom model, choose a new non-conflicting custom name and preserve the existing model.
+- modify_gtap_closure starts from the standard policy closure and accepts only a non-empty list of its documented local swap types. An unchanged standard, normal, or ordinary policy closure needs no closure-tool call.
+- modify_shock_cmf documents every whitelisted GTAP code, meaning, and dimension in its tool description. Select the narrowest code that matches the user's request. Do not invent codes or raw CMF statements. qgdp and qcgds require the corresponding closure patch CMF.
+- Match a shock code's declared dimensions exactly to the economic scope. A sector shock in one region needs a sector-by-region code, not a worldwide sector code. International shipping/margin technology uses atf/ats/atd; af* is intermediate-input technology and afe* is primary-factor technology, never shipping. Positive technology-shock values mean improvements/augmentation.
+- Always state the resolved active aggregates in the response.
 
-One-time preparation tools:
-- aggregate_gtap_model and fetch_observed_data are environment/data preparation tools, not part of routine policy conversations. Do not call them during normal analysis.
-- If a later step fails because the aggregate model or standardized data are missing, tell the user which preparation step is required.
+General tool-routing patterns:
+- Existing aggregation + standard closure + ordinary shocks: modify_shock_cmf(baseline_id, scenario_name, modifications) -> run_gtap_scenario(output_cmf). No aggregation call, no closure call, and no base_cmf.
+- Existing aggregation + supported closure target: modify_gtap_closure(non-empty modifications) -> modify_shock_cmf(base_cmf=exact output_cmf, modifications) -> run_gtap_scenario(exact output_cmf).
+- Requested local aggregation + original_2014: aggregate_custom_gtap_model(minimal member moves) -> use its model_name for closure/shock/run tools.
+- Requested local aggregation + registered_2024: first establish authorization to prepare and register model-compatible baseline assets. If authorization is absent, stop before aggregation.
+
+Solve and results:
+- run_gtap_scenario requires an explicit CMF and automatically returns the structured solve report after success, including baseline, closure, shocks, status, accuracy, warnings, output catalog, and default economic indicators.
+- Do not call read_gtap_results merely to describe a just-completed run. Call it only for targeted follow-up variables, headers, sources, or dimensions not already present in the automatic report.
+- read_gtap_results queries one run at a time. If the user asks for a comparison, read each requested run separately and reason over the returned values; there is no comparison tool.
+- If a tool fails, retry only when the correction is local, directly supported by the error, and preserves the user's requested scope. Do not call an unrelated preparation tool to recover from a closure, shock, run, or result-query error. A rejected empty closure modification means the closure tool was unnecessary; for a standard closure, proceed through modify_shock_cmf without base_cmf.
+
+Preparation:
+- aggregate_gtap_model, fetch_observed_data, build_2024_baseline_update, and baseline registration are occasional preparation operations, not routine policy steps.
+- A custom aggregation requires compatible mappings and baseline assets before it can be used.
 
 Response style:
-- Be concise and write in English.
-- Lead with status, then list the key output paths or next action.
+- Lead with status and important model context, then give result paths or the next action.
 - Do not use emoji.
 """
+
+
+SHOCK_DIMENSION_PROPERTIES: dict[str, dict[str, Any]] = {
+    "commodity": {"type": "string", "minLength": 1, "description": "Commodity or active aggregate sector."},
+    "sector": {"type": "string", "minLength": 1, "description": "Producing sector or active aggregate sector."},
+    "factor": {"type": "string", "minLength": 1, "description": "Endowment/factor: Land, UnSkLab, SkLab, Capital, or NatRes."},
+    "region": {"type": "string", "minLength": 1, "description": "Country or active aggregate region."},
+    "exporter": {"type": "string", "minLength": 1, "description": "Source/exporter country or active aggregate region."},
+    "importer": {"type": "string", "minLength": 1, "description": "Destination/importer country or active aggregate region."},
+}
+
+SHOCK_TOOL_SPECS: dict[str, dict[str, Any]] = {
+    "tms": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral import tariff/tax power", "modes": ["target_rate", "rate_change", "power_change"]},
+    "tm": {"dimensions": ["commodity", "importer"], "description": "source-generic import-tax power"},
+    "txs": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral export-tax/subsidy power"},
+    "tx": {"dimensions": ["commodity", "exporter"], "description": "destination-generic export-tax/subsidy power"},
+    "to": {"dimensions": ["commodity", "region"], "description": "commodity output/income-tax power"},
+    "tp": {"dimensions": ["region"], "description": "uniform private-consumption-tax shift"},
+    "pop": {"dimensions": ["region"], "description": "regional population"},
+    "qo": {"dimensions": ["factor", "region"], "description": "regional factor-endowment supply"},
+    "aosec": {"dimensions": ["sector"], "description": "output technology for one sector worldwide; positive is an improvement"},
+    "aoreg": {"dimensions": ["region"], "description": "region-wide output technology; positive is an improvement"},
+    "aoall": {"dimensions": ["sector", "region"], "description": "output technology for one sector in one region; positive is an improvement"},
+    "avasec": {"dimensions": ["sector"], "description": "value-added technology for one sector worldwide; positive is an improvement"},
+    "avareg": {"dimensions": ["region"], "description": "region-wide value-added technology; positive is an improvement"},
+    "afcom": {"dimensions": ["commodity"], "description": "worldwide commodity-specific intermediate-input technology; positive is an improvement"},
+    "afsec": {"dimensions": ["sector"], "description": "sector-wide intermediate-input technology; positive is an improvement"},
+    "afreg": {"dimensions": ["region"], "description": "regional intermediate-input technology; not international shipping; positive is an improvement"},
+    "afall": {"dimensions": ["commodity", "sector", "region"], "description": "commodity-sector-region intermediate-input technology; positive is an improvement"},
+    "afecom": {"dimensions": ["factor"], "description": "worldwide factor-specific primary-factor technology; positive is an improvement"},
+    "afesec": {"dimensions": ["sector"], "description": "sector-wide primary-factor technology; positive is an improvement"},
+    "afereg": {"dimensions": ["region"], "description": "regional primary-factor technology; positive is an improvement"},
+    "afeall": {"dimensions": ["factor", "sector", "region"], "description": "factor-sector-region primary-factor technology; positive is an improvement"},
+    "ams": {"dimensions": ["commodity", "exporter", "importer"], "description": "bilateral import-augmenting technology; positive is an improvement"},
+    "atf": {"dimensions": ["commodity"], "description": "commodity-specific international-shipping technology; positive is an improvement"},
+    "ats": {"dimensions": ["exporter"], "description": "origin/exporter-specific international-shipping technology; positive is an improvement"},
+    "atd": {"dimensions": ["importer"], "description": "destination/importer-specific international-shipping technology for all deliveries to that destination; positive is an improvement"},
+    "qgdp": {"dimensions": ["region"], "description": "regional real-GDP target; requires gdp_target_tfp closure CMF"},
+    "qcgds": {"dimensions": ["region"], "description": "regional real-investment target; requires fixed_regional_investment closure CMF"},
+}
+
+
+def shock_tool_variant(code: str, spec: dict[str, Any]) -> dict[str, Any]:
+    dimensions = list(spec["dimensions"])
+    modes = list(spec.get("modes") or ["percent_change"])
+    properties: dict[str, Any] = {
+        "type": {"type": "string", "enum": ["gtap_variable"], "description": "Structured whitelisted GTAP variable shock."},
+        "code": {"type": "string", "enum": [code], "description": f"{code}: {spec['description']}."},
+    }
+    for dimension in dimensions:
+        properties[dimension] = SHOCK_DIMENSION_PROPERTIES[dimension]
+    properties.update(
+        {
+            "value": {
+                "type": "number",
+                "description": "Requested value. Positive technology values mean improvements. Tariff target/rate modes use percentage points.",
+            },
+            "value_mode": {
+                "type": "string",
+                "enum": modes,
+                "description": "Use the mode allowed for this code; non-tariff shocks use percent_change.",
+            },
+            "note": {"type": "string", "minLength": 1, "description": "Optional audit note."},
+        }
+    )
+    return {
+        "type": "object",
+        "title": f"{code}({','.join(dimensions)})",
+        "description": spec["description"],
+        "properties": properties,
+        "required": ["type", "code", *dimensions, "value", "value_mode"],
+        "additionalProperties": False,
+    }
+
+
+SHOCK_TOOL_VARIANTS = [shock_tool_variant(code, spec) for code, spec in SHOCK_TOOL_SPECS.items()]
 
 
 TOOLS: list[dict[str, Any]] = [
@@ -81,7 +171,7 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "aggregate_gtap_model",
-            "description": "Run script 01 to aggregate GTAP10A GTAP-APT 2014 data into the coarse RunGTAP model directory.",
+            "description": "Explicit preparation only: rebuild the bundled default model with its existing mapping. Call only when the user asks to rebuild it or a required bundled model artifact is reported missing. Never call for a request that says use/keep/retain the current or existing aggregation. This tool does not create a closure CMF, policy CMF, or scenario result and cannot repair a closure/shock error.",
             "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
         },
     },
@@ -89,7 +179,7 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "aggregate_custom_gtap_model",
-            "description": "Create a validated custom GTAPAgg mapping by moving selected original regions/sectors from the default mapping, then aggregate an independent RunGTAP model. Unspecified members keep their default assignments.",
+            "description": "State-changing preparation: apply only requested regional or sectoral member moves to the current mapping; all unlisted members and the factor aggregation remain unchanged. Use only when the requested analysis needs detail absent from the active aggregation. Before calling, verify baseline compatibility: original_2014 can use the new model, while registered_2024 requires separately prepared and explicitly registered model-compatible assets. A name collision is not permission to overwrite; choose a new name unless the user explicitly authorized replacement of that exact custom model.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -139,7 +229,7 @@ TOOLS: list[dict[str, Any]] = [
                     },
                     "overwrite": {
                         "type": "boolean",
-                        "description": "Replace an existing custom mapping/model with the same name. Default false.",
+                        "description": "Destructive replacement of the exact existing custom mapping/model. Default false. Never switch this to true merely because a first call reports a name collision; explicit user authorization for replacement is required.",
                     },
                 },
                 "required": ["aggregation_name"],
@@ -175,7 +265,7 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "build_2024_baseline_update",
-            "description": "Run script 05 to build pre-policy baseline-update CMF files, defaulting to the latest observed year/current 2024 baseline, using standard GTAP closure plus GEMPACK swap statements.",
+            "description": "Optional bundled historical-preparation recipe, not a routine GTAP scenario step: use observed macro data to build 2014-to-target-year baseline-update CMFs with regional avareg=qgdp swaps. Call only when the user explicitly asks to create or refresh the registered 2024 baseline.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -195,19 +285,42 @@ TOOLS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
-            "name": "run_gtap_scenario",
-            "description": "Run script 03 to solve a GTAP scenario from a specified CMF file. If omitted, runs the latest 2024 baseline-update CMF.",
+            "name": "modify_gtap_closure",
+            "description": "Use only when the user requests a documented change to the standard multiregion policy closure. A non-empty modifications array is mandatory. DO NOT call for a standard, normal, ordinary, unchanged, or retained policy closure: modify_shock_cmf without base_cmf already starts from that closure. Supported patches: gdp_target_tfp swaps avareg(REG)=qgdp(REG); fixed_regional_investment swaps cgdslack(REG)=qcgds(REG). The tool returns a shock-free output_cmf; pass that exact path as base_cmf to modify_shock_cmf. It does not accept raw closure text or arbitrary lists.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "cmf": {"type": "string", "description": "CMF path, relative to project root or absolute under the workspace."},
-                    "model_name": {"type": "string", "description": "RunGTAP model directory name. Default gtap2015_10x10."},
-                    "result_dir": {"type": "string", "description": "Output directory, relative to project root or under result."},
-                    "set_as_default_baseline": {
-                        "type": "boolean",
-                        "description": "Set true ONLY when running the 2014->2024 baseline-update CMF. After a successful solve, registers the solved database and updated tariff rates in asset/basedata_2024.har and asset/baserate_2024.har as the project's default baseline. Do not set for policy runs.",
+                    "baseline_id": {
+                        "type": "string",
+                        "enum": ["original_2014", "registered_2024"],
+                        "description": "Explicit model input: original_2014 uses the model's original GTAP database; registered_2024 uses asset/basedata_2024.har. Never infer this from the word base.",
+                    },
+                    "scenario_name": {"type": "string", "description": "Name for the new closure CMF."},
+                    "model_name": {"type": "string", "description": "Optional model. registered_2024 must use the model recorded in baseline metadata."},
+                    "modifications": {
+                        "type": "array",
+                        "minItems": 1,
+                        "description": "One or more requested supported closure patches. Never pass an empty array; omit the entire closure-tool call when the standard closure is unchanged.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["gdp_target_tfp", "fixed_regional_investment"],
+                                    "description": "Approved local closure swap.",
+                                },
+                                "regions": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                    "description": "Countries/codes/active aggregate regions to which the swap applies.",
+                                },
+                            },
+                            "required": ["type", "regions"],
+                            "additionalProperties": False,
+                        },
                     },
                 },
+                "required": ["baseline_id", "modifications"],
                 "additionalProperties": False,
             },
         },
@@ -216,87 +329,69 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "modify_shock_cmf",
-            "description": "Apply a structured policy modification spec to an existing CMF and write a new policy CMF without overwriting the source CMF.",
+            "description": "Routine scenario entry point. When base_cmf is omitted, create a scenario directly from the explicit baseline and unchanged standard policy closure. Supply base_cmf only for the exact CMF returned by a supported closure patch or earlier shock modification. Put all compatible shocks in one call. Each modification uses type=gtap_variable and a code-specific schema branch that exposes only the dimensions that code actually accepts. Choose the narrowest branch matching the intended scope. In particular, atd(importer) is one destination-wide international-shipping improvement and must be one shock, not one shock per commodity; af* is intermediate-input technology, not shipping. Positive technology values mean improvements. qgdp requires a gdp_target_tfp base_cmf and qcgds requires a fixed_regional_investment base_cmf. Raw CMF statements and unlisted codes are rejected.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "base_year": {
-                        "type": "integer",
-                        "enum": [2014, 2024],
-                        "description": "Baseline year the policy is applied on. Default 2024: builds a clean standard-policy-closure CMF on the project's default 2024 baseline database (qgdp endogenous, no avareg swap). Use 2014 ONLY when the user explicitly asks to shock from the 2014 database; that path appends shocks onto the 2014->2024 baseline-update CMF.",
+                    "baseline_id": {
+                        "type": "string",
+                        "enum": ["original_2014", "registered_2024"],
+                        "description": "Required explicit scenario input. Routine policy work may use registered_2024; original database experiments use original_2014.",
                     },
                     "base_cmf": {
                         "type": "string",
-                        "description": "Legacy base_year=2014 only: base CMF path. Defaults to the latest baseline_update_2014_to_YYYY.cmf. Ignored when base_year is 2024.",
+                        "minLength": 1,
+                        "pattern": "\\S",
+                        "description": "Omit for the unchanged standard policy closure. Otherwise use only the exact output_cmf returned by modify_gtap_closure or an earlier shock modification; baseline and model must match. Never send an empty string or an invented path.",
                     },
                     "output_cmf": {
                         "type": "string",
+                        "minLength": 1,
+                        "pattern": "\\S",
                         "description": "Optional output CMF path under result/. If omitted, a timestamped policy CMF is created.",
                     },
                     "scenario_name": {
                         "type": "string",
+                        "minLength": 1,
+                        "pattern": "\\S",
                         "description": "Short scenario name for audit comments and output naming.",
                     },
                     "model_name": {
                         "type": "string",
-                        "description": "Optional RunGTAP model for a 2024 policy. Defaults to the model recorded with the project default baseline.",
+                        "minLength": 1,
+                        "pattern": "\\S",
+                        "description": "Optional RunGTAP model. registered_2024 is bound to the model in baseline metadata.",
                     },
                     "modifications": {
                         "type": "array",
-                        "description": "Structured policy modifications to append to the CMF.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "enum": [
-                                        "bilateral_import_tariff",
-                                        "regional_population",
-                                        "regional_endowment",
-                                        "regional_productivity",
-                                    ],
-                                    "description": "Supported simple policy or regional shock modification type.",
-                                },
-                                "importer": {
-                                    "type": "string",
-                                    "description": "Importing country/region, e.g. China or EastAsia.",
-                                },
-                                "exporter": {
-                                    "type": "string",
-                                    "description": "Exporting country/region, e.g. United States or NAMerica.",
-                                },
-                                "commodity": {
-                                    "type": "string",
-                                    "description": "Commodity or aggregate sector, e.g. soybeans or GrainsCrops.",
-                                },
-                                "tariff_percent": {
-                                    "type": "number",
-                                    "description": "Tariff value in percent for bilateral_import_tariff.",
-                                },
-                                "region": {
-                                    "type": "string",
-                                    "description": "Country or aggregate region for regional_population/regional_endowment/regional_productivity.",
-                                },
-                                "shock_percent": {
-                                    "type": "number",
-                                    "description": "Percent shock value for regional_population/regional_endowment/regional_productivity.",
-                                },
-                                "rate_mode": {
-                                    "type": "string",
-                                    "enum": ["target_rate", "rate_change", "power_change"],
-                                    "description": "target_rate sets the target ad valorem tariff rate after conversion from base RTMS to tms tax-power percent change; rate_change changes the ad valorem rate by the given percentage points; power_change directly shocks the GTAP tax power.",
-                                },
-                                "note": {
-                                    "type": "string",
-                                    "description": "Optional analyst note.",
-                                },
-                            },
-                            "required": ["type"],
-                            "additionalProperties": False,
-                        },
+                        "minItems": 1,
+                        "description": "All structured GTAP variable shocks for this experiment. Select one code-specific branch per shock; unrelated dimensions are not accepted.",
+                        "items": {"oneOf": SHOCK_TOOL_VARIANTS},
                     },
                 },
-                "required": ["modifications"],
+                "required": ["baseline_id", "scenario_name", "modifications"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_gtap_scenario",
+            "description": "Solve one explicit CMF through RunGTAP/GEMPACK. Pass the exact output_cmf returned by the immediately preceding closure/shock/baseline tool; never reconstruct its path. The model is normally inferred from CMF context. A successful call returns the exact result_dir plus a structured report with baseline, closure, shocks, status, accuracy, warnings, output catalog, GDP, welfare, trade, sector, and volume summaries. Answer from that report first; use read_gtap_results only for explicitly requested cells or sources absent from it.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cmf": {"type": "string", "description": "Exact output_cmf returned by a closure, shock, or baseline-generation tool."},
+                    "model_name": {"type": "string", "description": "Optional model override; normally inferred from CMF context."},
+                    "result_dir": {"type": "string", "description": "Optional unique output directory under result/. A timestamped directory is created when omitted."},
+                    "report_top": {"type": "integer", "description": "Top rows included in the automatic result report. Default 8."},
+                    "set_as_default_baseline": {
+                        "type": "boolean",
+                        "description": "Historical preparation only: register a successfully solved generated 2014-to-2024 baseline-update CMF. Never use for policy scenarios.",
+                    },
+                },
+                "required": ["cmf"],
                 "additionalProperties": False,
             },
         },
@@ -305,13 +400,13 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "read_gtap_results",
-            "description": "Read collected RunGTAP/GEMPACK results and return structured JSON summaries or targeted rows from solution/HAR outputs.",
+            "description": "Focused follow-up only after run_gtap_scenario's automatic report. Do not repeat the default report or query values already returned there. Pass the exact result_dir returned by the run tool; never derive it from a scenario name or choose latest when the current run is known. Sources: solution, volume, welfare, welfare_decomposition, updated_data, base_data for the scenario's explicit baseline, tax_rates, log, cmf, and files. Query only requested variables/headers and needed dimensions. Rows preserve code, value, LongName, source, and dimensions. To compare runs, query each exact result_dir separately.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "result_dir": {
                         "type": "string",
-                        "description": "Run result directory, relative to project root or under result/. Defaults to the newest result/03_run* directory.",
+                        "description": "Exact result_dir returned by run_gtap_scenario. Omit only for an explicit user request about the newest prior run; never guess or reconstruct the current run directory.",
                     },
                     "view": {
                         "type": "string",
@@ -321,18 +416,19 @@ TOOLS: list[dict[str, Any]] = [
                             "volume",
                             "updated_data",
                             "base_data",
-                            "compare_data",
+                            "tax_rates",
+                            "welfare_decomposition",
                             "welfare",
                             "log",
                             "cmf",
                             "files",
                         ],
-                        "description": "default gives broad status, pre-run shocks, GDP/EV/trade/sector summaries. solution reads GTAP.sol variables. updated_data/base_data read before/after level-style HAR tables.",
+                        "description": "Select the result source. default repeats the broad report; other views perform focused queries.",
                     },
                     "variables": {
                         "type": "array",
                         "items": {"type": "string"},
-                                    "description": "GTAP variable names to read, e.g. qgdp, avareg, EV, DTBAL, tot, qo, qxs, tms.",
+                        "description": "GTAP variable names to read, e.g. qgdp, avareg, EV, DTBAL, tot, qo, qxs, tms. The automatic run report includes available codes and LongNames.",
                     },
                     "headers": {
                         "type": "array",
@@ -344,6 +440,11 @@ TOOLS: list[dict[str, Any]] = [
                     "exporter": {"type": "string", "description": "Source/exporter aggregate region for bilateral variables."},
                     "importer": {"type": "string", "description": "Destination/importer aggregate region for bilateral variables."},
                     "contains": {"type": "string", "description": "Case-insensitive substring filter over dimensions and LongName."},
+                    "dimensions": {
+                        "type": "object",
+                        "additionalProperties": {"type": "string"},
+                        "description": "Raw HAR dimension filters, e.g. {\"REG\":\"NAmerica\",\"TRAD_COMM\":\"GrainsCrops\"}.",
+                    },
                     "max_rows": {"type": "integer", "description": "Maximum rows to return for query/detail views. Default 40."},
                     "top": {"type": "integer", "description": "Number of top absolute-value rows for default summaries. Default 8."},
                     "include_baseline": {
@@ -366,6 +467,7 @@ SCRIPT_SUMMARIES = {
     "01_aggregate_gtap10a_2014_to_10x10.py": [RESULT_DIR / "01_aggregation" / "aggregation_summary.txt"],
     "04_fetch_observed_calibration_data.py": [RESULT_DIR / "04_observed_data" / "fetch_manifest.json"],
     "05_build_2024_baseline_update.py": [RESULT_DIR / "05_baseline_update" / "baseline_update_summary.txt"],
+    "modify_gtap_closure.py": [],
     "06_apply_policy_shock_modifications.py": [RESULT_DIR / "06_policy_modifications" / "policy_modification_summary.txt"],
     "03_run_rungtap_scenario.py": [],
     "07_read_gtap_results.py": [RESULT_DIR / "07_result_reads" / "latest_result_read.json"],
@@ -380,40 +482,35 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
 
 
 def aggregation_context_text() -> str:
-    region_rows = read_csv_rows(STANDARDIZED_DIR / "gtap_region_country_map.csv")
-    sector_rows = read_csv_rows(STANDARDIZED_DIR / "gtap_sector_map.csv")
-    if not region_rows or not sector_rows:
+    metadata = read_default_baseline_metadata()
+    model_name = str(metadata.get("model_name") or "gtap2015_10x10")
+    mapping_value = metadata.get("aggregation_mapping")
+    mapping_path = Path(str(mapping_value)) if mapping_value else PROJECT_DIR / "runtime" / "rungtap" / model_name / "aggregation_mapping.txt"
+    if not mapping_path.is_file():
         return (
             "Current GTAP aggregation context:\n"
-            "- Standardized aggregation mapping CSV files were not found. Run fetch_observed_data or inspect result\\04_observed_data\\standardized.\n"
+            f"- The model-bound aggregation mapping was not found: {mapping_path}.\n"
         )
 
-    region_members: dict[str, list[str]] = {}
-    for row in region_rows:
-        region = row.get("gtap_region") or ""
-        if not region:
-            continue
-        label = row.get("iso3") or row.get("gtap_code") or row.get("country_name") or ""
-        name = row.get("country_name") or ""
-        if label and name and label != name:
-            label = f"{label}({name})"
-        if label:
-            region_members.setdefault(region, []).append(label)
-
-    sector_members: dict[str, list[str]] = {}
-    for row in sector_rows:
-        sector = row.get("gtap_sector_agg") or ""
-        if not sector:
-            continue
-        code = row.get("gtap_sector") or ""
-        name = row.get("gtap_sector_name") or ""
-        label = f"{code}({name})" if code and name else code or name
-        if label:
-            sector_members.setdefault(sector, []).append(label)
+    sections = parse_mapping_sections(mapping_path.read_text(encoding="utf-8", errors="replace"))
+    sector_members = {split_target(line)[0]: [] for line in sections[0]}
+    canonical_sectors = {normalize_label(name): name for name in sector_members}
+    for line in sections[1]:
+        item = split_member(line)
+        target = canonical_sectors.get(normalize_label(item["target"]), item["target"])
+        sector_members.setdefault(target, []).append(f"{item['code']}({item['description']})")
+    region_members = {split_target(line)[0]: [] for line in sections[2]}
+    canonical_regions = {normalize_label(name): name for name in region_members}
+    for line in sections[3]:
+        item = split_member(line)
+        target = canonical_regions.get(normalize_label(item["target"]), item["target"])
+        region_members.setdefault(target, []).append(f"{item['code']}({item['description']})")
+    factor_names = [line.split("&", 1)[0].strip() for line in sections[4]]
 
     lines = [
         "",
         "Current GTAP aggregation context:",
+        f"- Model: {model_name}; mapping: {mapping_path}.",
         f"- Model resolution: {len(region_members)} aggregate regions and {len(sector_members)} aggregate sectors. Countries and specific commodities in natural-language requests must be mapped to these aggregates.",
         "- Regional aggregation:",
     ]
@@ -422,10 +519,11 @@ def aggregation_context_text() -> str:
     lines.append("- Sectoral aggregation:")
     for sector in sorted(sector_members):
         lines.append(f"  - {sector}: {', '.join(sector_members[sector])}")
+    lines.append(f"- Factor aggregation: {', '.join(factor_names)}")
     lines.extend(
         [
             "- The modification tool validates mappings again. If mapping fails, tell the user which aggregates are available.",
-            "- Policy tools must resolve countries and commodities using the active mapping above. After a custom aggregation, do not continue assuming the default NAMerica, EastAsia, or GrainsCrops aggregates.",
+            "- Policy tools must resolve countries and commodities using the active mapping above. After a custom aggregation, do not continue assuming the default NAmerica, EastAsia, or GrainsCrops aggregates.",
         ]
     )
     return "\n".join(lines)
@@ -443,6 +541,11 @@ def session_messages(session_id: str) -> list[dict[str, Any]]:
     if messages and messages[0].get("role") == "system":
         messages[0]["content"] = build_system_prompt()
     return messages
+
+
+def reset_session(session_id: str) -> bool:
+    """Discard one conversation without affecting artifacts or other sessions."""
+    return SESSIONS.pop(session_id, None) is not None
 
 
 def repair_message_history(messages: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
@@ -489,12 +592,27 @@ def start_user_turn(session_id: str, user_text: str) -> list[dict[str, Any]]:
 
 
 def load_api_key() -> str:
-    env_key = os.environ.get("DEEPSEEK_API_KEY")
+    env_key = os.environ.get("OPENROUTER_API_KEY")
     if env_key:
         return env_key.strip()
     if KEY_FILE.exists():
-        return KEY_FILE.read_text(encoding="utf-8").strip()
-    raise RuntimeError("Agent API key not found. Set DEEPSEEK_API_KEY or create scripts/key.txt.")
+        lines = KEY_FILE.read_text(encoding="utf-8").splitlines()
+        if len(lines) >= 2 and lines[1].strip():
+            return lines[1].strip()
+    raise RuntimeError(
+        "OpenRouter API key not found. Set OPENROUTER_API_KEY or place it on line 2 of scripts/key.txt."
+    )
+
+
+def openrouter_client() -> OpenAI:
+    global _OPENROUTER_CLIENT
+    if _OPENROUTER_CLIENT is None:
+        _OPENROUTER_CLIENT = OpenAI(
+            base_url=OPENROUTER_BASE_URL,
+            api_key=load_api_key(),
+            timeout=120.0,
+        )
+    return _OPENROUTER_CLIENT
 
 
 def safe_project_path(value: str | None, default: Path | None = None) -> Path | None:
@@ -676,22 +794,43 @@ def tool_build_2024_baseline_update(arguments: dict[str, Any]) -> dict[str, Any]
     return run_python_script("05_build_2024_baseline_update.py", args=args)
 
 
+def tool_modify_gtap_closure(arguments: dict[str, Any]) -> dict[str, Any]:
+    baseline_id = str(arguments.get("baseline_id") or "").strip()
+    if baseline_id not in {"original_2014", "registered_2024"}:
+        raise ValueError("modify_gtap_closure requires baseline_id=original_2014 or registered_2024")
+    modifications = arguments.get("modifications") or []
+    if not isinstance(modifications, list) or not modifications:
+        raise ValueError("modify_gtap_closure requires at least one approved closure modification")
+    spec = {
+        "scenario_name": arguments.get("scenario_name") or "closure modification",
+        "baseline_id": baseline_id,
+        "modifications": modifications,
+    }
+    if arguments.get("model_name"):
+        spec["model_name"] = safe_model_name(arguments["model_name"])
+    return run_python_script(
+        "modify_gtap_closure.py",
+        args=["--spec-json", json.dumps(spec, ensure_ascii=False)],
+    )
+
+
 def tool_modify_shock_cmf(arguments: dict[str, Any]) -> dict[str, Any]:
     modifications = arguments.get("modifications") or []
     if not isinstance(modifications, list) or not modifications:
         raise ValueError("modify_shock_cmf requires a non-empty modifications array.")
 
-    base_year = int(arguments.get("base_year") or 2024)
+    baseline_id = str(arguments.get("baseline_id") or "").strip()
+    if baseline_id not in {"original_2014", "registered_2024"}:
+        raise ValueError("modify_shock_cmf requires baseline_id=original_2014 or registered_2024")
 
     spec = {
         "scenario_name": arguments.get("scenario_name") or "policy modification",
+        "baseline_id": baseline_id,
         "modifications": modifications,
     }
-    args = ["--base-year", str(base_year), "--spec-json", json.dumps(spec, ensure_ascii=False)]
-    if base_year == 2014:
-        base_cmf = safe_project_path(arguments.get("base_cmf"), latest_baseline_cmf())
-        if base_cmf is None:
-            raise ValueError("Base CMF could not be resolved.")
+    args = ["--baseline-id", baseline_id, "--spec-json", json.dumps(spec, ensure_ascii=False)]
+    if arguments.get("base_cmf"):
+        base_cmf = safe_project_path(arguments.get("base_cmf"))
         args += ["--base-cmf", str(base_cmf)]
     if arguments.get("output_cmf"):
         output_cmf = safe_result_path(
@@ -705,15 +844,36 @@ def tool_modify_shock_cmf(arguments: dict[str, Any]) -> dict[str, Any]:
 
 
 def tool_run_gtap_scenario(arguments: dict[str, Any]) -> dict[str, Any]:
+    cmf = safe_project_path(arguments.get("cmf"))
+    if cmf is None or not cmf.is_file():
+        raise ValueError("run_gtap_scenario requires an existing CMF path; no baseline CMF is selected implicitly")
+    cmf_context = extract_cmf_context(cmf.read_text(encoding="utf-8", errors="replace"))
+    if not arguments.get("set_as_default_baseline") and cmf_context.get("baseline_id") not in {
+        "original_2014",
+        "registered_2024",
+    }:
+        raise ValueError(
+            "Policy CMF does not declare baseline_id=original_2014 or registered_2024. "
+            "Regenerate it with modify_gtap_closure or modify_shock_cmf."
+        )
+    if arguments.get("result_dir"):
+        result_dir = safe_result_path(arguments.get("result_dir"), RESULT_DIR / "03_run_agent")
+    else:
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        slug = re.sub(r"[^A-Za-z0-9_-]+", "_", cmf.stem).strip("_")[:50] or "scenario"
+        result_dir = RESULT_DIR / f"03_run_{slug}_{stamp}"
     args: list[str] = []
-    cmf = safe_project_path(arguments.get("cmf"), latest_baseline_cmf())
-    result_dir = safe_result_path(arguments.get("result_dir"), RESULT_DIR / "03_run_baseline_2024")
     args += ["--cmf", str(cmf), "--result-dir", str(result_dir)]
     if arguments.get("model_name"):
         args += ["--model-name", safe_model_name(arguments["model_name"])]
     if arguments.get("set_as_default_baseline"):
         args.append("--set-as-default-baseline")
-    return run_python_script("03_run_rungtap_scenario.py", args=args, timeout=1800, result_dir=result_dir)
+    output = run_python_script("03_run_rungtap_scenario.py", args=args, timeout=1800, result_dir=result_dir)
+    if output.get("returncode") == 0:
+        output["result_report"] = tool_read_gtap_results(
+            {"result_dir": str(result_dir), "view": "default", "top": arguments.get("report_top") or 8}
+        ).get("result")
+    return output
 
 
 def tool_read_gtap_results(arguments: dict[str, Any]) -> dict[str, Any]:
@@ -740,6 +900,9 @@ def tool_read_gtap_results(arguments: dict[str, Any]) -> dict[str, Any]:
     ]:
         if arguments.get(key) is not None:
             args += [option, str(arguments[key])]
+
+    for key, value in (arguments.get("dimensions") or {}).items():
+        args += ["--dimension", f"{key}={value}"]
 
     if arguments.get("include_baseline"):
         args.append("--include-baseline")
@@ -785,100 +948,39 @@ TOOL_HANDLERS = {
     "aggregate_custom_gtap_model": tool_aggregate_custom_gtap_model,
     "fetch_observed_data": tool_fetch_observed_data,
     "build_2024_baseline_update": tool_build_2024_baseline_update,
+    "modify_gtap_closure": tool_modify_gtap_closure,
     "run_gtap_scenario": tool_run_gtap_scenario,
     "modify_shock_cmf": tool_modify_shock_cmf,
     "read_gtap_results": tool_read_gtap_results,
 }
 
 
-def latest_baseline_cmf() -> Path:
-    baseline_dir = RESULT_DIR / "05_baseline_update" / "cmf"
-    candidates = sorted(baseline_dir.glob("baseline_update_2014_to_*.cmf"))
-    legacy_dir = RESULT_DIR / "05_observed_shocks" / "cmf"
-    if not candidates:
-        candidates = sorted(legacy_dir.glob("observed_2014_to_*.cmf"))
-
-    if not candidates:
-        return baseline_dir / "baseline_update_2014_to_2024.cmf"
-    def year_of(path: Path) -> int:
-        match = re.search(r"to_(\d{4})\.cmf$", path.name)
-        return int(match.group(1)) if match else 0
-    return max(candidates, key=year_of)
-
-
-def deepseek_request(
-    messages: list[dict[str, Any]],
-    include_thinking: bool = True,
-) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "model": DEEPSEEK_MODEL,
-        "messages": messages,
-        "tools": TOOLS,
-        "stream": False,
-    }
-    payload["tool_choice"] = "auto"
-    if include_thinking:
-        payload["reasoning_effort"] = "high"
-        payload["thinking"] = {"type": "enabled"}
-
-    data = json.dumps(payload, ensure_ascii=True).encode("utf-8")
-    request = urllib.request.Request(
-        DEEPSEEK_URL,
-        data=data,
-        headers={
-            "Authorization": f"Bearer {load_api_key()}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
+def openrouter_request(messages: list[dict[str, Any]]) -> dict[str, Any]:
+    response = openrouter_client().chat.completions.create(
+        model=OPENROUTER_MODEL,
+        messages=messages,
+        tools=TOOLS,
+        tool_choice="auto",
+        stream=False,
+        extra_body={"reasoning": {"enabled": True}},
     )
-    try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as error:
-        body = error.read().decode("utf-8", errors="replace")
-        if include_thinking and error.code in {400, 422}:
-            return deepseek_request(messages, include_thinking=False)
-        raise RuntimeError(f"Model service HTTP {error.code}: {body}") from error
+    return response.model_dump(mode="json", exclude_none=True)
 
 
-def iter_deepseek_stream(messages: list[dict[str, Any]], include_thinking: bool = True):
-    payload: dict[str, Any] = {
-        "model": DEEPSEEK_MODEL,
-        "messages": messages,
-        "tools": TOOLS,
-        "tool_choice": "auto",
-        "stream": True,
-    }
-    if include_thinking:
-        payload["reasoning_effort"] = "high"
-        payload["thinking"] = {"type": "enabled"}
-
-    data = json.dumps(payload, ensure_ascii=True).encode("utf-8")
-    request = urllib.request.Request(
-        DEEPSEEK_URL,
-        data=data,
-        headers={
-            "Authorization": f"Bearer {load_api_key()}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
+def iter_openrouter_stream(messages: list[dict[str, Any]]):
+    stream = openrouter_client().chat.completions.create(
+        model=OPENROUTER_MODEL,
+        messages=messages,
+        tools=TOOLS,
+        tool_choice="auto",
+        stream=True,
+        extra_body={"reasoning": {"enabled": True}},
     )
-    try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            for raw_line in response:
-                line = raw_line.decode("utf-8", errors="replace").strip()
-                if not line or not line.startswith("data:"):
-                    continue
-                payload_text = line[5:].strip()
-                if payload_text == "[DONE]":
-                    break
-                yield json.loads(payload_text)
-    except urllib.error.HTTPError as error:
-        body = error.read().decode("utf-8", errors="replace")
-        if include_thinking and error.code in {400, 422}:
-            yield from iter_deepseek_stream(messages, include_thinking=False)
-            return
-        raise RuntimeError(f"Model service HTTP {error.code}: {body}") from error
+    for chunk in stream:
+        payload = chunk.model_dump(mode="json", exclude_none=True)
+        if payload.get("error"):
+            raise RuntimeError(f"OpenRouter streaming error: {json.dumps(payload['error'], ensure_ascii=False)}")
+        yield payload
 
 
 def merge_tool_call_delta(tool_calls: list[dict[str, Any]], delta_calls: list[dict[str, Any]]) -> None:
@@ -900,17 +1002,30 @@ def merge_tool_call_delta(tool_calls: list[dict[str, Any]], delta_calls: list[di
 
 
 def stream_assistant_message(messages: list[dict[str, Any]]):
-    reasoning_content = ""
+    reasoning_details: list[dict[str, Any]] = []
+    fallback_reasoning = ""
     content = ""
     tool_calls: list[dict[str, Any]] = []
-    for chunk in iter_deepseek_stream(messages):
+    for chunk in iter_openrouter_stream(messages):
         choices = chunk.get("choices") or []
         if not choices:
             continue
         delta = choices[0].get("delta") or {}
-        if delta.get("reasoning_content"):
-            reasoning_content += delta["reasoning_content"]
-            yield {"type": "reasoning_delta", "content": delta["reasoning_content"]}
+        detail_chunks = delta.get("reasoning_details") or []
+        if isinstance(detail_chunks, list):
+            reasoning_details.extend(detail_chunks)
+            visible_reasoning = "".join(
+                str(detail.get("text") or detail.get("summary") or "")
+                for detail in detail_chunks
+                if isinstance(detail, dict)
+            )
+            if visible_reasoning:
+                yield {"type": "reasoning_delta", "content": visible_reasoning}
+        reasoning_delta = delta.get("reasoning") or delta.get("reasoning_content")
+        if reasoning_delta:
+            fallback_reasoning += str(reasoning_delta)
+            if not detail_chunks:
+                yield {"type": "reasoning_delta", "content": str(reasoning_delta)}
         if delta.get("content"):
             content += delta["content"]
             yield {"type": "assistant_delta", "content": delta["content"]}
@@ -918,8 +1033,13 @@ def stream_assistant_message(messages: list[dict[str, Any]]):
             merge_tool_call_delta(tool_calls, delta["tool_calls"])
 
     message: dict[str, Any] = {"role": "assistant", "content": content or None}
+    if reasoning_details:
+        # OpenRouter requires these blocks to be returned in their original
+        # order and without modification on subsequent requests.
+        message["reasoning_details"] = reasoning_details
+    elif fallback_reasoning:
+        message["reasoning"] = fallback_reasoning
     if tool_calls:
-        message["reasoning_content"] = reasoning_content
         message["tool_calls"] = tool_calls
     yield {"type": "assistant_message", "message": message}
 
@@ -930,10 +1050,11 @@ def normalize_assistant_message(message: dict[str, Any]) -> dict[str, Any]:
         "role": "assistant",
         "content": message.get("content"),
     }
+    if message.get("reasoning_details"):
+        normalized["reasoning_details"] = message["reasoning_details"]
+    elif message.get("reasoning") or message.get("reasoning_content"):
+        normalized["reasoning"] = message.get("reasoning") or message.get("reasoning_content")
     if tool_calls:
-        # Thinking mode requires reasoning_content to be sent back on
-        # subsequent requests for assistant messages that perform tool calls.
-        normalized["reasoning_content"] = message.get("reasoning_content") or ""
         normalized["tool_calls"] = tool_calls
     return normalized
 
@@ -967,7 +1088,7 @@ def chat(session_id: str, user_text: str) -> dict[str, Any]:
     final_content = ""
 
     for _ in range(MAX_TOOL_ROUNDS):
-        response = deepseek_request(messages)
+        response = openrouter_request(messages)
         choice = response["choices"][0]
         assistant_message = normalize_assistant_message(choice["message"])
         tool_calls = assistant_message.get("tool_calls") or []

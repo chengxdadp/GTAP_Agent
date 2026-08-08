@@ -1,0 +1,57 @@
+{
+  "aggregation_name": "china_us_soy_split",
+  "region_count": 12,
+  "sector_count": 11,
+  "region_names": [
+    "Oceania",
+    "EastAsia",
+    "SEAsia",
+    "SouthAsia",
+    "NAmerica",
+    "LatinAmer",
+    "EU_28",
+    "MENA",
+    "SSA",
+    "RestofWorld",
+    "China",
+    "USA"
+  ],
+  "sector_names": [
+    "GrainsCrops",
+    "MeatLstk",
+    "Extraction",
+    "ProcFood",
+    "TextWapp",
+    "LightMnfc",
+    "HeavyMnfc",
+    "Util_Cons",
+    "TransComm",
+    "OthServices",
+    "Soybeans"
+  ],
+  "region_changes": [
+    {
+      "code": "chn",
+      "description": "China",
+      "from": "EastAsia",
+      "to": "China"
+    },
+    {
+      "code": "usa",
+      "description": "United States of America",
+      "from": "NAmerica",
+      "to": "USA"
+    }
+  ],
+  "sector_changes": [
+    {
+      "code": "osd",
+      "description": "Oil seeds",
+      "from": "GrainsCrops",
+      "to": "Soybeans"
+    }
+  ],
+  "model_name": "gtap2015_china_us_soy",
+  "base_mapping": "D:\\RD\\GTAPAgent\\runtime\\gtapagg\\GTAP10A\\GTAP\\default.txt",
+  "mapping_file": "D:\\RD\\GTAPAgent\\config\\aggregations\\china_us_soy_split.txt"
+}

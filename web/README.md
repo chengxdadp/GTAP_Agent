@@ -23,16 +23,20 @@ File responsibilities:
 | `app.js` | Streaming events, Markdown rendering, status, and Execution Trace |
 | `styles.css` | Two-pane layout and responsive styling |
 | `server.py` | Lightweight HTTP service, static files, and `/api/*` routes |
-| `agent.py` | English system prompt, tool schemas, sessions, DeepSeek requests, and tool execution |
+| `agent.py` | English system prompt, tool schemas, sessions, OpenRouter requests, and tool execution |
 
 `server.py` remains intentionally small. Agent orchestration and GTAP workflow logic do not live in the HTTP handler.
 
 ## Starting the App
 
-The API key is loaded in this order:
+The OpenRouter API key is loaded in this order:
 
-1. `DEEPSEEK_API_KEY` environment variable
-2. `scripts\key.txt`
+1. `OPENROUTER_API_KEY` environment variable
+2. The second line of `scripts\key.txt`
+
+The default endpoint is `https://openrouter.ai/api/v1` and the default model is
+`openai/gpt-5.6-luna`. Override them with `OPENROUTER_BASE_URL` and
+`OPENROUTER_MODEL` when needed.
 
 From the project root:
 
@@ -74,7 +78,7 @@ The `app.js` URL includes a version marker so that a normal page refresh does no
 
 ## Agent Workflow Rules
 
-`BASE_SYSTEM_PROMPT` distinguishes three stages.
+`BASE_SYSTEM_PROMPT` distinguishes preparation from explicit scenario analysis.
 
 ### One-Time Preparation
 
@@ -82,20 +86,37 @@ The `app.js` URL includes a version marker so that a normal page refresh does no
 - `aggregate_custom_gtap_model`
 - `fetch_observed_data`
 
-### Default 2024 Baseline
+### Optional Historical Baseline Preparation
 
 - `build_2024_baseline_update`
 - `run_gtap_scenario(set_as_default_baseline=true)`
 
 ### Routine Policy Analysis
 
-- `modify_shock_cmf(base_year=2024)`
+- Select `baseline_id=original_2014` or `baseline_id=registered_2024` explicitly.
+- `modify_gtap_closure`, only if the standard policy closure needs a non-empty documented local swap. Do not call it for the unchanged standard closure.
+- `modify_shock_cmf`; with no `base_cmf`, it starts directly from the unchanged standard policy closure.
 - `run_gtap_scenario`
-- `read_gtap_results`
+- `read_gtap_results`, only for targeted follow-up queries not contained in the automatic run report.
+
+General routing examples:
+
+```text
+existing aggregation + standard closure + shocks
+  -> modify_shock_cmf(no base_cmf, all shocks in one call)
+  -> run_gtap_scenario(exact output_cmf)
+
+existing aggregation + supported closure patch + shocks
+  -> modify_gtap_closure(non-empty modifications)
+  -> modify_shock_cmf(base_cmf=exact returned output_cmf)
+  -> run_gtap_scenario(exact output_cmf)
+```
+
+Before changing aggregation, the Agent checks baseline compatibility. `original_2014` is model-local. A newly aggregated model cannot silently reuse `registered_2024`; compatible baseline preparation and registration require explicit authorization. A custom-model name collision does not authorize `overwrite=true`.
 
 If `asset\basedata_2024.har` is missing, the Agent must explain that the default 2024 baseline has not been prepared and request confirmation. It must not silently start the full baseline workflow.
 
-If a user asks only for a CMF, the Agent does not solve it automatically. It calls `run_gtap_scenario` only when a run is requested, and calls `read_gtap_results` only when interpretation is requested.
+If a user asks only for a CMF, the Agent does not solve it automatically. A successful `run_gtap_scenario` automatically returns the solve/result description, so a separate result-read call is unnecessary unless the user requests deeper variables or dimensions.
 
 ## Registered Tools
 
@@ -105,7 +126,7 @@ Tool schemas are defined in `agent.py`. No arbitrary shell execution is exposed.
 
 - Takes no arguments.
 - Rebuilds `gtap2015_10x10` using the default mapping.
-- Is a one-time preparation tool and should not run during routine policy conversations.
+- Is a one-time preparation tool and should not run during routine policy conversations or requests to keep the current aggregation.
 
 ### `aggregate_custom_gtap_model`
 
@@ -141,30 +162,38 @@ Example:
 - Generates pre-policy baseline-update CMFs.
 - Uses the standard GTAP closure plus `Swap avareg(REG)=qgdp(REG)` so that `avareg` is inferred as implicit TFP.
 
+### `modify_gtap_closure`
+
+- Arguments: `baseline_id`, `scenario_name`, `model_name`, and `modifications`.
+- Starts from the standard policy closure and permits only local `gdp_target_tfp` or `fixed_regional_investment` swaps for selected regions.
+- Requires at least one modification. Standard/normal/unchanged policy closure scenarios skip this tool.
+- Rejects arbitrary closure text and writes a CMF plus a machine-readable scenario manifest.
+
 ### `modify_shock_cmf`
 
-- Arguments: `base_year`, `base_cmf`, `output_cmf`, `scenario_name`, `model_name`, and `modifications`.
-- Defaults to `base_year=2024` and creates a clean standard-policy-closure CMF from the project's default 2024 baseline.
+- Arguments: explicit `baseline_id`, optional `base_cmf`, `output_cmf`, `scenario_name`, `model_name`, and `modifications`.
+- `original_2014` uses the selected model's original data; `registered_2024` uses the registered asset baseline. No baseline is inferred.
 - Does not overwrite the source CMF. It writes a timestamped policy CMF and resolved JSON/CSV outputs.
-- Supports:
-  - `bilateral_import_tariff`
-  - `regional_population`
-  - `regional_endowment`
-  - `regional_productivity`
+- With `base_cmf` omitted, directly creates the scenario from the selected baseline and standard policy closure.
+- Multiple compatible shocks belong in one call. Each GTAP variable code has its own parameter-schema branch, so unrelated dimensions are not accepted: for example, `atd` exposes only `importer`, while `aoall` exposes only `sector` and `region`.
+- Shock codes must match the requested dimensional scope exactly: worldwide sector (`aosec`), region-wide (`aoreg`), and sector-by-region (`aoall`) are distinct. International shipping technology uses only `atf`, `ats`, or `atd`; the `af*` family describes intermediate-input technology. Positive technology shocks denote improvements.
+- The tool description gives the Agent the whitelisted GTAP codes, their economic meanings, valid value modes, and exact required dimensions. These include trade/tax instruments, population and factor supplies, output/value-added/intermediate/factor technologies, import and shipping technologies, and closure-sensitive GDP/investment targets.
 
 Example:
 
 ```json
 {
   "scenario_name": "China US soybean tariff 20",
+  "baseline_id": "registered_2024",
   "modifications": [
     {
-      "type": "bilateral_import_tariff",
+      "type": "gtap_variable",
+      "code": "tms",
       "importer": "China",
       "exporter": "United States",
       "commodity": "soybeans",
-      "tariff_percent": 20,
-      "rate_mode": "target_rate"
+      "value": 20,
+      "value_mode": "target_rate"
     }
   ]
 }
@@ -173,22 +202,23 @@ Example:
 Under the default 10-by-10 mapping, this resolves to a statement similar to:
 
 ```text
-Shock tms("GrainsCrops","NAMerica","EastAsia") = 2.825983;
+Shock tms("GrainsCrops","NAmerica","EastAsia") = 2.825983;
 ```
 
 `target_rate` sets the target ad valorem tariff. The tool reads baseline `RTMS` and converts the target to a percentage change in the GTAP `tms` tax power. `rate_change` applies an ad valorem percentage-point change, while `power_change` directly applies a tax-power shock.
 
 ### `run_gtap_scenario`
 
-- Arguments: `cmf`, `model_name`, `result_dir`, and `set_as_default_baseline`.
+- Arguments: required `cmf`, optional `model_name`, `result_dir`, `report_top`, and historical-only `set_as_default_baseline`.
 - Calls script 03 and the project-local RunGTAP/GEMPACK runtime.
+- Infers the model from CMF context, creates a timestamped result directory when omitted, and automatically returns scenario context, solve status, accuracy, warnings, output descriptions, and default economic indicators.
 - `set_as_default_baseline=true` is reserved for a successfully solved baseline-update CMF and must not be used for a policy run.
 
 ### `read_gtap_results`
 
-- Arguments: `result_dir`, `view`, `variables`, `headers`, `region`, `sector`, `exporter`, `importer`, `contains`, `max_rows`, `top`, `include_baseline`, and `sort_by_abs`.
-- Reads broad summaries, `.sol`, HAR data, welfare, logs, CMFs, and file inventories.
-- The default summary includes solve status, pre-run shocks, accuracy, GDP, `avareg`, EV, trade, and sector output.
+- Arguments include `result_dir`, source `view`, variables, headers, semantic filters, raw `dimensions`, limits, and sorting.
+- Parameter-queries solution, volume, exact scenario baseline, updated data, tax rates, welfare decomposition, logs, CMFs, and file inventories.
+- It does not compare runs. The Agent can query earlier and current runs separately.
 
 ## HTTP API
 
@@ -222,12 +252,14 @@ Event types:
 
 The page can display Agent text and tool progress incrementally instead of waiting for the entire workflow to finish.
 
+`New Task` discards the current server-side Agent session, creates a fresh session ID, and clears both the visible conversation and Execution Trace. It is disabled while a request is running so an in-progress GTAP tool call cannot be orphaned by a UI reset. `Clear` in the Execution Trace remains display-only and does not reset Agent context.
+
 ## Reasoning and Tool Calls
 
-The model service returns `reasoning_content` separately from final `content`.
+OpenRouter returns structured `reasoning_details` separately from final `content`.
 
 - The frontend renders `reasoning_delta` in a collapsible `Agent reasoning` block.
-- When an assistant message includes `tool_calls`, the backend preserves the required `reasoning_content` in subsequent requests within the same user turn.
+- The backend preserves every `reasoning_details` block in its original order and passes it back unmodified on subsequent requests, including tool-call continuations.
 - Tool-message history is repaired before a new user turn so that incomplete tool-call sequences do not cause model-service errors.
 - RunGTAP uses a shared local work directory, so web tool execution is serialized with a lock to prevent concurrent requests from overwriting one another.
 

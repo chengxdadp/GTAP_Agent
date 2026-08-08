@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gtap-agent-benchmark/prediction.schema.json",
+  "title": "No-tools numerical prediction",
+  "type": "object",
+  "required": ["status", "scenario_interpretation", "estimates", "limitations"],
+  "properties": {
+    "status": {"enum": ["estimated", "needs_clarification", "unsupported"]},
+    "scenario_interpretation": {"type": "string"},
+    "clarifying_question": {"type": ["string", "null"]},
+    "estimates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["variable", "dimensions", "unit", "point", "lower", "upper", "confidence", "rationale"],
+        "properties": {
+          "variable": {"type": "string"},
+          "dimensions": {"type": "object"},
+          "unit": {"type": "string"},
+          "point": {"type": "number"},
+          "lower": {"type": "number"},
+          "upper": {"type": "number"},
+          "confidence": {"enum": ["low", "medium", "high"]},
+          "rationale": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

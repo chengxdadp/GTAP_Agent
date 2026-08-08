@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gtap_runtime import RUNGTAP_DIR
+from gtap_scenario import GTAP_CHECK_ON_READ_LINES, extract_cmf_context, safe_model_name
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 RESULT_DIR = PROJECT_DIR / "result"
@@ -27,11 +28,11 @@ def parser() -> argparse.ArgumentParser:
     argument_parser.add_argument(
         "--cmf",
         type=Path,
-        default=SCENARIO_CMF,
-        help="Scenario GTAP.cmf file to run. Defaults to the 2024 baseline-update CMF.",
+        required=True,
+        help="Scenario GTAP.cmf file to run. The baseline must be explicit in the CMF.",
     )
-    argument_parser.add_argument("--model-name", default=MODEL_NAME, help="RunGTAP model directory name.")
-    argument_parser.add_argument("--result-dir", type=Path, default=RUN_RESULT_DIR, help="Directory for collected outputs.")
+    argument_parser.add_argument("--model-name", default=None, help="RunGTAP model directory name. Defaults to the model embedded in the CMF.")
+    argument_parser.add_argument("--result-dir", type=Path, required=True, help="Directory for collected outputs.")
     argument_parser.add_argument(
         "--set-as-default-baseline",
         action="store_true",
@@ -200,7 +201,7 @@ def write_auxiliary_cmfs() -> None:
         "\n".join(
             [
                 "! Generated for scripted RunGTAP scenario",
-                "check-on-read all = warn ;",
+                *GTAP_CHECK_ON_READ_LINES,
                 f"aux files = {RUNGTAP_DIR}\\SHOCKS;",
                 "display file = SHOCKS.DIS;",
                 f"file gtapsets = {MODEL_DIR}\\sets.har;",
@@ -225,7 +226,7 @@ def write_auxiliary_cmfs() -> None:
         "\n".join(
             [
                 "! Generated for scripted RunGTAP scenario",
-                "check-on-read all = warn ;",
+                *GTAP_CHECK_ON_READ_LINES,
                 f"aux files = {RUNGTAP_DIR}\\ALTPAR;",
                 f"file gtapsets = {MODEL_DIR}\\sets.har;",
                 f"file alterpar = {MODEL_DIR}\\altertax.prm;",
@@ -270,7 +271,7 @@ def write_auxiliary_cmfs() -> None:
         "\n".join(
             [
                 "! Generated for scripted RunGTAP scenario",
-                "check-on-read all = warn ;",
+                *GTAP_CHECK_ON_READ_LINES,
                 f"aux files = {RUNGTAP_DIR}\\DECOMP;",
                 f"file gtapsets = {MODEL_DIR}\\sets.har;",
                 "file gtapsol = decomp.sol;",
@@ -287,7 +288,7 @@ def write_auxiliary_cmfs() -> None:
         "\n".join(
             [
                 "! Generated for scripted RunGTAP scenario",
-                "check-on-read all = warn ;",
+                *GTAP_CHECK_ON_READ_LINES,
                 f"aux files = {RUNGTAP_DIR}\\GTPVOL;",
                 f"file gtapsets = {MODEL_DIR}\\sets.har;",
                 f"file gtapdata = {MODEL_DIR}\\basedata.har;",
@@ -446,10 +447,14 @@ def collect_results() -> None:
 def main() -> None:
     global MODEL_NAME, MODEL_DIR, SCENARIO_CMF, RUN_RESULT_DIR
     args = parser().parse_args()
-    MODEL_NAME = args.model_name
-    MODEL_DIR = RUNGTAP_DIR / MODEL_NAME
     SCENARIO_CMF = args.cmf
     RUN_RESULT_DIR = args.result_dir
+
+    require_file(SCENARIO_CMF)
+    scenario_text = SCENARIO_CMF.read_text(encoding="utf-8", errors="replace")
+    scenario_context = extract_cmf_context(scenario_text)
+    MODEL_NAME = safe_model_name(args.model_name or scenario_context.get("model_name"), MODEL_NAME)
+    MODEL_DIR = RUNGTAP_DIR / MODEL_NAME
 
     require_dir(RUNGTAP_DIR)
     require_dir(WORK_DIR)
@@ -457,7 +462,6 @@ def main() -> None:
     require_file(MODEL_DIR / "basedata.har")
     require_file(MODEL_DIR / "sets.har")
     require_file(MODEL_DIR / "default.prm")
-    require_file(SCENARIO_CMF)
 
     ensure_inside(RUN_RESULT_DIR, RESULT_DIR)
     if RUN_RESULT_DIR.exists():
@@ -465,7 +469,6 @@ def main() -> None:
     RUN_RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
     clean_previous_work_outputs()
-    scenario_text = SCENARIO_CMF.read_text(encoding="utf-8", errors="replace")
     (WORK_DIR / "GTAP.cmf").write_text(portable_scenario_text(scenario_text), encoding="utf-8")
     write_stored_inputs()
     write_auxiliary_cmfs()
@@ -483,6 +486,14 @@ def main() -> None:
     (RUN_RESULT_DIR / "rungtap_stdout.log").write_text(completed.stdout, encoding="utf-8", errors="replace")
     (RUN_RESULT_DIR / "rungtap_stderr.log").write_text(completed.stderr, encoding="utf-8", errors="replace")
     collect_results()
+    (RUN_RESULT_DIR / "scenario_context.json").write_text(
+        json.dumps(scenario_context, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    shutil.copy2(SCENARIO_CMF, RUN_RESULT_DIR / "scenario_source.cmf")
+    for suffix in [".resolved.json", ".resolved.csv", ".manifest.json"]:
+        sidecar = SCENARIO_CMF.with_suffix(suffix)
+        if sidecar.is_file():
+            shutil.copy2(sidecar, RUN_RESULT_DIR / sidecar.name)
 
     flags = sorted(path.name for path in WORK_DIR.glob("*.flg"))
     required_outputs = ["GTAP.sl4", "GTAP.sol", "gdata.upd", "newview.har", "decomp.har", "GTAPVol.har"]
@@ -494,6 +505,10 @@ def main() -> None:
         f"Return code: {completed.returncode}",
         f"Model directory: {MODEL_DIR}",
         f"Scenario CMF: {SCENARIO_CMF}",
+        f"Baseline ID: {scenario_context.get('baseline_id') or 'not declared'}",
+        f"Baseline year: {scenario_context.get('baseline_year') or 'not declared'}",
+        f"Baseline data: {scenario_context.get('basedata') or 'read from CMF'}",
+        f"Closure ID: {scenario_context.get('closure_id') or 'not declared'}",
         f"Batch file: {batch_path}",
         f"Flags: {', '.join(flags) if flags else 'none'}",
         f"Missing required outputs: {', '.join(missing_outputs) if missing_outputs else 'none'}",

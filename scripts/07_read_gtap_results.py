@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from gtap_runtime import find_executable
+from gtap_scenario import extract_cmf_context
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -36,7 +37,8 @@ def parser() -> argparse.ArgumentParser:
             "volume",
             "updated_data",
             "base_data",
-            "compare_data",
+            "tax_rates",
+            "welfare_decomposition",
             "welfare",
             "log",
             "cmf",
@@ -51,6 +53,11 @@ def parser() -> argparse.ArgumentParser:
     argument_parser.add_argument("--exporter", help="Source/exporter region filter for bilateral variables.")
     argument_parser.add_argument("--importer", help="Destination/importer region filter for bilateral variables.")
     argument_parser.add_argument("--contains", help="Case-insensitive substring filter over all dimensions and long names.")
+    argument_parser.add_argument(
+        "--dimension",
+        action="append",
+        help="Raw HAR dimension filter in NAME=VALUE form. Can be repeated, e.g. REG=NAmerica.",
+    )
     argument_parser.add_argument("--max-rows", type=int, default=40, help="Maximum rows to return for query/detail views.")
     argument_parser.add_argument("--top", type=int, default=8, help="Top absolute-value rows for default broad summaries.")
     argument_parser.add_argument("--include-baseline", action="store_true", help="Include compact baseline and updated data excerpts when possible.")
@@ -65,6 +72,20 @@ def as_list(values: list[str] | None) -> list[str]:
     for value in values:
         items.extend(part.strip() for part in value.split(",") if part.strip())
     return items
+
+
+def parse_dimension_filters(values: list[str] | None) -> dict[str, str]:
+    filters: dict[str, str] = {}
+    for value in values or []:
+        if "=" not in value:
+            raise ValueError(f"Dimension filter must use NAME=VALUE: {value!r}")
+        key, target = value.split("=", 1)
+        key = key.strip()
+        target = target.strip()
+        if not key or not target:
+            raise ValueError(f"Dimension filter must use non-empty NAME=VALUE: {value!r}")
+        filters[key] = target
+    return filters
 
 
 def safe_project_path(value: str | Path | None, default: Path | None = None) -> Path | None:
@@ -128,6 +149,26 @@ def resolve_path_from_summary(value: str | None, result_dir: Path) -> Path | Non
     if result_path.exists():
         return result_path.resolve()
     return project_path.resolve()
+
+
+def scenario_context(result_dir: Path, run_status: dict[str, Any] | None = None) -> dict[str, Any]:
+    context_path = result_dir / "scenario_context.json"
+    if context_path.is_file():
+        try:
+            payload = json.loads(read_text(context_path))
+            if isinstance(payload, dict):
+                return payload
+        except json.JSONDecodeError:
+            pass
+    cmf_candidates = [result_dir / "scenario_source.cmf", result_dir / "GTAP.cmf"]
+    if run_status and run_status.get("scenario_cmf"):
+        source = resolve_path_from_summary(run_status.get("scenario_cmf"), result_dir)
+        if source:
+            cmf_candidates.insert(0, source)
+    for path in cmf_candidates:
+        if path.is_file():
+            return extract_cmf_context(read_text(path))
+    return {}
 
 
 def run_subprocess(command: list[str], timeout: int = 120) -> subprocess.CompletedProcess[str]:
@@ -299,6 +340,7 @@ def filter_rows(
     exporter: str | None = None,
     importer: str | None = None,
     contains: str | None = None,
+    dimension_filters: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     filtered: list[dict[str, Any]] = []
     for row in rows:
@@ -313,6 +355,14 @@ def filter_rows(
             continue
         if importer and not (len(region_values) >= 2 and matches_filter(region_values[-1], importer)):
             continue
+        if dimension_filters:
+            normalized_dimensions = {str(key).lower(): str(value) for key, value in dimensions.items()}
+            if any(
+                key.lower() not in normalized_dimensions
+                or not matches_filter(normalized_dimensions[key.lower()], target)
+                for key, target in dimension_filters.items()
+            ):
+                continue
         if not contains_filter(row, contains):
             continue
         filtered.append(row)
@@ -380,6 +430,10 @@ def summarize_run_status(result_dir: Path) -> dict[str, Any]:
         "run_ended": summary.get("Run ended"),
         "model_directory": summary.get("Model directory"),
         "scenario_cmf": summary.get("Scenario CMF"),
+        "baseline_id": summary.get("Baseline ID"),
+        "baseline_year": summary.get("Baseline year"),
+        "baseline_data": summary.get("Baseline data"),
+        "closure_id": summary.get("Closure ID"),
         "collected_results": summary.get("Collected results"),
         "warnings_count": int(warning_count_match.group(1)) if warning_count_match else len(warnings),
         "warnings": warnings[:5],
@@ -443,11 +497,36 @@ def extract_cmf_shocks(result_dir: Path, run_status: dict[str, Any]) -> dict[str
 
 
 def available_files(result_dir: Path) -> dict[str, Any]:
-    interesting = ["GTAP.sol", "GTAP.sl4", "GTAP.log", "GTAP.cmf", "GTAPVol.har", "decomp.har", "newview.har", "newrate.har", "gdata.upd", "run_summary.txt"]
+    interesting = ["GTAP.sol", "GTAP.sl4", "GTAP.log", "GTAP.cmf", "GTAPVol.har", "decomp.har", "newview.har", "newrate.har", "gdata.upd", "run_summary.txt", "scenario_context.json", "scenario_source.cmf"]
     return {
         name: {"exists": (result_dir / name).exists(), "bytes": (result_dir / name).stat().st_size if (result_dir / name).exists() else 0}
         for name in interesting
     }
+
+
+def result_catalog(result_dir: Path, run_status: dict[str, Any]) -> dict[str, Any]:
+    sources = {
+        "solution": result_dir / "GTAP.sol",
+        "volume": result_dir / "GTAPVol.har",
+        "welfare_decomposition": result_dir / "decomp.har",
+        "updated_data": result_dir / "newview.har",
+        "tax_rates": result_dir / "newrate.har",
+    }
+    try:
+        sources["base_data"] = result_file_for_view("base_data", result_dir, run_status)
+    except FileNotFoundError:
+        pass
+    catalog: dict[str, Any] = {}
+    for name, path in sources.items():
+        if not path.is_file():
+            continue
+        metadata = har_metadata(path)
+        catalog[name] = {
+            "source_file": str(path),
+            "header_count": len(metadata),
+            "variables": list(metadata.values()),
+        }
+    return catalog
 
 
 def result_file_for_view(view: str, result_dir: Path, run_status: dict[str, Any]) -> Path:
@@ -458,12 +537,17 @@ def result_file_for_view(view: str, result_dir: Path, run_status: dict[str, Any]
     if view == "updated_data":
         return result_dir / "newview.har"
     if view == "base_data":
-        model_dir = resolve_path_from_summary(run_status.get("model_directory"), result_dir)
-        if not model_dir:
-            raise FileNotFoundError("Model directory is unknown; cannot locate basedata.har.")
-        return model_dir / "basedata.har"
-    if view == "compare_data":
-        return result_dir / "gdata.upd"
+        baseline_path = run_status.get("baseline_data")
+        if baseline_path and baseline_path.lower() != "read from cmf":
+            return Path(baseline_path)
+        context = scenario_context(result_dir, run_status)
+        if context.get("basedata"):
+            return Path(str(context["basedata"]))
+        raise FileNotFoundError("The scenario does not declare its actual baseline data file.")
+    if view == "tax_rates":
+        return result_dir / "newrate.har"
+    if view == "welfare_decomposition":
+        return result_dir / "decomp.har"
     raise ValueError(f"View {view} does not map to a HAR file.")
 
 
@@ -483,13 +567,21 @@ def read_view_rows(
     if not resolved and (variables or headers):
         resolved = headers + variables
     rows = read_har_rows(har_path, resolved or None, metadata)
-    rows = filter_rows(rows, region=args.region, sector=args.sector, exporter=args.exporter, importer=args.importer, contains=args.contains)
+    rows = filter_rows(
+        rows,
+        region=args.region,
+        sector=args.sector,
+        exporter=args.exporter,
+        importer=args.importer,
+        contains=args.contains,
+        dimension_filters=parse_dimension_filters(args.dimension),
+    )
     return {
         "source_file": str(har_path),
         "headers_read": resolved or "all",
         "row_count": len(rows),
         "rows": sort_and_limit(rows, args.max_rows, sort_abs=not args.no_sort_abs),
-        "metadata": {header: metadata.get(header, {}) for header in (resolved or list(metadata)[:30])},
+        "metadata": {header: metadata.get(header, {}) for header in (resolved or list(metadata))},
     }
 
 
@@ -534,8 +626,10 @@ def default_volume_summary(result_dir: Path, args: argparse.Namespace) -> dict[s
 
 def baseline_updated_excerpt(result_dir: Path, run_status: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
     output: dict[str, Any] = {}
-    model_dir = resolve_path_from_summary(run_status.get("model_directory"), result_dir)
-    base_path = model_dir / "basedata.har" if model_dir else None
+    try:
+        base_path = result_file_for_view("base_data", result_dir, run_status)
+    except FileNotFoundError:
+        base_path = None
     updated_path = result_dir / "newview.har"
     if base_path and base_path.exists():
         metadata = har_metadata(base_path)
@@ -574,13 +668,17 @@ def build_output(args: argparse.Namespace) -> dict[str, Any]:
         "result_dir": str(result_dir),
         "view": args.view,
         "run_status": run_status,
+        "scenario_context": scenario_context(result_dir, run_status),
         "pre_run": {"scenario": cmf},
         "available_files": available_files(result_dir),
         "notes": [
             "Default view reports broad pre-run inputs and post-run changes. Use view=solution with variable/region/sector/exporter/importer for targeted follow-up.",
-            "For before/after level-style tables, use view=base_data for basedata.har and view=updated_data or compare_data for updated HAR outputs.",
+            "Use view=base_data for the exact baseline declared by the scenario, updated_data for the solved database view, tax_rates for updated rates, and welfare_decomposition for decomp.har.",
         ],
     }
+
+    if args.view in {"default", "files"}:
+        output["result_catalog"] = result_catalog(result_dir, run_status)
 
     if args.view == "files":
         return output

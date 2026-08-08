@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gtap-agent-benchmark/case.schema.json",
+  "title": "GTAP Agent benchmark case",
+  "type": "object",
+  "required": [
+    "id",
+    "split",
+    "title",
+    "difficulty",
+    "expected_behavior",
+    "prompt",
+    "reference_plan",
+    "target_outputs",
+    "tags"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+    "split": {"enum": ["pilot", "development", "test"]},
+    "title": {"type": "string", "minLength": 1},
+    "difficulty": {"enum": ["basic", "intermediate", "advanced"]},
+    "expected_behavior": {"enum": ["run", "clarify", "reject"]},
+    "prompt": {"type": "string", "minLength": 20},
+    "reference_plan": {
+      "type": "object",
+      "required": ["aggregation", "baseline_id", "closure", "shocks", "result_queries", "forbidden_operations"],
+      "properties": {
+        "aggregation": {"type": "object"},
+        "baseline_id": {"type": ["string", "null"]},
+        "closure": {"type": "object"},
+        "shocks": {"type": "array", "items": {"type": "object"}},
+        "result_queries": {"type": "array", "items": {"type": "object"}},
+        "forbidden_operations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "target_outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "variable", "unit", "dimensions"],
+        "properties": {
+          "key": {"type": "string"},
+          "variable": {"type": "string"},
+          "unit": {"type": "string"},
+          "dimensions": {"type": "object"}
+        }
+      }
+    },
+    "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "additionalProperties": false
+}

@@ -1,20 +1,19 @@
-# Please install OpenAI SDK first: `pip3 install openai`
+# Please install OpenAI SDK first: `python -m pip install -r requirements.txt`
 import os
 from openai import OpenAI
 
 client = OpenAI(
-    api_key=os.environ.get('DEEPSEEK_API_KEY'),
-    base_url="https://api.deepseek.com")
+    api_key=os.environ.get('OPENROUTER_API_KEY'),
+    base_url="https://openrouter.ai/api/v1")
 
 response = client.chat.completions.create(
-    model="deepseek-v4-pro",
+    model="openai/gpt-5.6-luna",
     messages=[
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "Hello"},
     ],
     stream=False,
-    reasoning_effort="high",
-    extra_body={"thinking": {"type": "enabled"}}
+    extra_body={"reasoning": {"enabled": True}}
 )
 
 print(response.choices[0].message.content)
@@ -24,15 +23,16 @@ from openai import OpenAI
 
 def send_messages(messages):
     response = client.chat.completions.create(
-        model="deepseek-v4-pro",
+        model="openai/gpt-5.6-luna",
         messages=messages,
-        tools=tools
+        tools=tools,
+        extra_body={"reasoning": {"enabled": True}},
     )
     return response.choices[0].message
 
 client = OpenAI(
     api_key="<your api key>",
-    base_url="https://api.deepseek.com",
+    base_url="https://openrouter.ai/api/v1",
 )
 
 tools = [

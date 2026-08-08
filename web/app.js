@@ -4,6 +4,9 @@ const composer = document.getElementById("composer");
 const input = document.getElementById("messageInput");
 const statusPill = document.getElementById("statusPill");
 const clearChain = document.getElementById("clearChain");
+const newTask = document.getElementById("newTask");
+
+const EMPTY_CHAIN_HTML = '<div class="empty-state">Tool calls will appear here, including scripts, arguments, exit codes, and summary files.</div>';
 
 function createSessionId() {
   if (window.crypto?.randomUUID) {
@@ -34,6 +37,7 @@ function setBusy(isBusy, label = "") {
   document.querySelectorAll(".quick-actions button").forEach((button) => {
     button.disabled = isBusy;
   });
+  newTask.disabled = isBusy;
 }
 
 function addMessage(role, text = "", renderMarkdown = false) {
@@ -87,6 +91,42 @@ function closeThinkingBlock() {
 function ensureChainNotEmpty() {
   const empty = chainEl.querySelector(".empty-state");
   if (empty) empty.remove();
+}
+
+function clearExecutionTrace() {
+  chainEl.innerHTML = EMPTY_CHAIN_HTML;
+  stepCounter = 0;
+}
+
+async function startNewTask() {
+  const previousSessionId = sessionId;
+  sessionId = createSessionId();
+
+  closeThinkingBlock();
+  closeAssistantDelta();
+  activeAssistantNode = null;
+  activeAssistantMarkdown = "";
+  activeThinkingPre = null;
+  messagesEl.replaceChildren();
+  clearExecutionTrace();
+  input.value = "";
+  setBusy(true, "Resetting");
+
+  try {
+    const response = await fetch("/api/session/reset", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({session_id: previousSessionId}),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  } catch (error) {
+    // The freshly generated session ID already isolates the next task even if
+    // cleanup of the unreachable server-side context fails.
+    console.warn("Could not remove the previous Agent session:", error);
+  } finally {
+    setBusy(false, isFileMode ? "Static preview" : "Ready");
+    input.focus();
+  }
 }
 
 function pretty(value) {
@@ -204,7 +244,11 @@ function renderMarkdownContent(markdown) {
 
   function flushList() {
     if (list.length) {
-      html.push(`<ul>${list.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ul>`);
+      html.push(
+        `<ul>${list
+          .map((item) => `<li>${item.map((part) => renderInlineMarkdown(part)).join("<br>")}</li>`)
+          .join("")}</ul>`
+      );
       list = [];
     }
   }
@@ -239,6 +283,11 @@ function renderMarkdownContent(markdown) {
       code.push(line);
       continue;
     }
+    const listContinuation = /^\s{2,}(.+)$/.exec(line);
+    if (listContinuation && list.length) {
+      list[list.length - 1].push(listContinuation[1]);
+      continue;
+    }
     if (/^\s*\|.*\|\s*$/.test(line)) {
       flushParagraph();
       flushList();
@@ -257,7 +306,7 @@ function renderMarkdownContent(markdown) {
     const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
     if (bullet) {
       flushParagraph();
-      list.push(bullet[1]);
+      list.push([bullet[1].trimEnd()]);
       continue;
     }
     if (!line.trim()) {
@@ -265,6 +314,7 @@ function renderMarkdownContent(markdown) {
       flushList();
       continue;
     }
+    flushList();
     paragraph.push(line.trim());
   }
   flushTable();
@@ -273,6 +323,10 @@ function renderMarkdownContent(markdown) {
   if (inCode) html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
   return html.join("");
 }
+
+// Keep the renderer available for local UI regression checks without sending
+// a model request or mutating an Agent session.
+window.gtapAgentRenderMarkdown = renderMarkdownContent;
 
 function handleEvent(event) {
   if (event.type === "session" && event.session_id) {
@@ -373,10 +427,8 @@ document.querySelectorAll("[data-prompt]").forEach((button) => {
   });
 });
 
-clearChain.addEventListener("click", () => {
-  chainEl.innerHTML = '<div class="empty-state">Tool calls will appear here, including scripts, arguments, exit codes, and summary files.</div>';
-  stepCounter = 0;
-});
+clearChain.addEventListener("click", clearExecutionTrace);
+newTask.addEventListener("click", startNewTask);
 
 if (isFileMode) {
   addMessage(
@@ -386,5 +438,5 @@ if (isFileMode) {
   );
   setBusy(false, "Static preview");
 } else {
-  addMessage("assistant", "Connected to the local GTAP tools. You can ask me to fetch observed data, build the 2024 baseline update, apply a policy scenario to the baseline, run a specified CMF, or execute the complete workflow.", true);
+  addMessage("assistant", "Connected to the local GTAP tools. Choose original_2014 or registered_2024, then ask me to make a local aggregation, closure, or shock change and run it. Completed runs automatically return their solve report; detailed result variables can be queried afterward.", true);
 }

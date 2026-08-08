@@ -1,0 +1,991 @@
+
+ ! This file was created at 07:46:04 on 08-AUG-2026 by the program
+ !  <shocks.for 09-SEP-2020> [shocks.tab]
+ ! which accesses some of the routines in the GEMPACK software release
+ !  <GEMPACK Release 12.1.003   January 2020>
+ 
+ !     -------------------------------------------------------                
+ !    !            GEMPACK Software System Licence            !               
+ !    !   Limited Size Executable-image Licence for GEMPACK   !               
+ !    !                 Licence No.  GEI-9999                 !               
+ !    !          Licence for Release 12.2 of GEMPACK          !               
+ !    !       Installer-generated expiring licence. Ask       !               
+ !    !     sales at gempack.com for a permanent licence.     !               
+ !    !    (Your GEMPACK licence expires on 19-OCT-2026.)     !               
+ !     -------------------------------------------------------                
+    
+
+ !
+ ! Values of TFD_HAT(TRAD_COMM,PROD_COMM,REG) - a real array of size 11x12x12
+ !-------------------------------------------
+ !
+
+! Coefficient TFD_HAT(TRAD_COMM,PROD_COMM,REG)
+
+ ! (Entries are written one "row" at a time - maximum of 4 per line.)
+
+ 
+ 11 12 12  real row_order;
+ 
+! (This array is shown as 12 matrices - each of size 11x12.)
+ 
+! The matrix TFD_HAT(%1,%2,"Oceania")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.56227112      0.58919799     -0.47823456     -0.61961335    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-3.52496766E-02  -1.4540118     -0.36393982     -0.24620326
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.76971239     -0.46337894     -0.20850249     -6.07478917E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.75002766     -0.33364660     -0.47955695     -0.51100051    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -6.1743813      -1.5614891     -0.43966919     -0.47105530
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.62476999     -0.72636807      0.70021671     -0.27541155
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.72114015      0.27694297     -7.95208365E-02 -0.53797847    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.2582307     -0.74934256     -0.25226453     -0.77093315
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.65878063     -0.36059061      0.78671741     -1.19209271E-05
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.43073258      0.52603376      -2.9153490      -1.4866129    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.38668019     -0.30693683     -0.28024831     -9.12667066E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -10.802199      -2.1038787      0.68828076       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.72557259      0.25814483     -0.68882954     -0.15727541    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.5510917      -1.3352996     -0.94496942      -1.2430141
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.5385078      -2.0176730      0.79714453      -7.2492585
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.55743116      0.16727367     -0.26570106     -0.23207325    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.25940424     -0.46859899     -0.32034680     -0.47592032
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.42307630      -1.2195348      0.72497392      -3.7156103
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.3951027      -1.6306804      -3.2935789     -0.99563694    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.9360750     -0.52857852     -0.88843042      -1.8007395
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -6.3251410      -1.7994061      -4.8629560      -1.8494791
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.49519166      0.28620383     -0.16859907     -0.32901636    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.19139305     -0.15821420     -5.72353639E-02 -0.20814635
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.10217706      -2.4667451      0.60936332      -8.5022898
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.63805395      0.38560331       4.5090423      0.18214321    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.69049853      0.26019987      0.93695021      0.18655229
+! %2=TransComm       OthServices     Soybeans        CGDS
+-3.93116847E-02 -0.83431214      0.77838695      0.30837688
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.46131852      0.28606597     -0.98125094     -0.95080572    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.73850268     -0.66110992     -0.51672292     -0.39916995
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.72693199      -1.3722004      0.77769077      -3.7217655
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-1.99278221E-02  0.73192263     -0.44876695     -0.25088865    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000     -2.83161066E-02 -3.55117545E-02 -0.22584338
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.33149141     -0.34674159      0.62356174       0.0000000
+
+! The matrix TFD_HAT(%1,%2,"EastAsia")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 1.91129018E-02  0.47888711      -2.9210567     -0.45128328    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-5.10312840E-02 -0.22978313     -9.36897192E-03 -0.30193678
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.0617751      -1.3130949      0.43355224     -8.38767663E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.98914152      -1.0018646      -2.4588404     -0.39236957    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.37508652     -7.63071999E-02 -0.16358513     -0.73829126
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.4631103      -3.1220994     -0.28860483      -1.6867217
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.6375755      1.30610829E-02 -4.10150066E-02 -0.50073397    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.16863471     -8.78515244E-02 -0.18534814     -0.35958460
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1879323      -1.6470348       1.8200409      -2.1969464
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.35301051      0.58866125      -1.1672448     -0.35622326    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.16223057     -0.25883502     -0.13963723      -3.1075861
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.84502566      -2.6402111      -6.3400030     -0.60538876
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.4181615     -0.20669802      -1.7216791     -0.41521519    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-9.97263044E-02 -0.31758693     -0.14970507      -1.6870558
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.6642714      -3.0654430       1.4153844     -2.63621435E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.58768421     -0.71133959      -1.8921238     -0.41822973    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.20871617     -0.13274191     -0.17885111     -0.68479663
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.2857343      -1.0902278       1.8523510      -2.3225589
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.5279205      -2.5104642      -10.844491      -3.3787904    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.8626955     -0.28306952      -1.3583180      -1.8036592
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -11.765633      -3.0367479      -1.8024982      -1.3813719
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.0819621      -2.9223373      -3.0138335      -4.6892924    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.6677523      -4.3835506      -3.3349113      -1.4666289
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.5870976      -2.7312925      -2.9623826      -2.1382890
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.47705775     -9.30991471E-02 -0.90468132     -0.38853729    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-6.46054298E-02 -8.14370140E-02 -0.12399063     -0.35653099
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.49661496      -1.3513463       1.0582032      -1.2203140
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.76113105      0.27845937      -1.0666058     -0.23054256    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-7.57953748E-02 -6.36291727E-02 -5.73068075E-02 -0.45905602
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.41726038      -1.0872422       1.2533051      -5.5860572
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.7160367      0.70776051      -3.3280826       0.0000000    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000     -7.03329861E-04 -5.72201330E-04
+! %2=TransComm       OthServices     Soybeans        CGDS
+-6.05546497E-03  -5.0876374       1.6636090       0.0000000
+
+! The matrix TFD_HAT(%1,%2,"SEAsia")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.92571288      0.12554175      -1.9742094     -0.87353301    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.90516126      -1.0168869     -0.59884030     -0.36797518
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.58870965     -0.32855448       5.1113915     -0.89571351
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.5744340      -1.2357005      -2.7479143     -0.85431904    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-8.94104019E-02 -0.28480011     -0.11362026      2.26548966E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.49500975     -0.60414034       7.0110641      -4.4376431
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.96427250     -6.43792301E-02  0.83420193      -1.0029744    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.57435209      -1.7535279     -0.53603256      -1.7978771
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.5195507     -0.87357986      0.90839845     -0.69214499
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2657943     -0.10601951     -0.92426193      -2.2732635    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.3975543      -1.2647623     -0.98909307      -1.5191808
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.5935206      -3.1950138       3.7700703     -0.16521293
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.49453762      -2.6016638      -2.3679867      -1.6831497    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.4211112      -1.0714711      -1.7074572      -1.6052386
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3683503      -1.5212849       1.6598020     -0.79906076
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.46611893      -1.1020871      -2.0245736      -1.2626123    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.91684258      -1.9640021     -0.91259408      -1.5158162
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.6107550      -1.5927262       2.4387021      -6.0908666
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.87696350      -2.3027761      -3.9718301      -2.9894164    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.6318802      -1.7541838      -1.5729816      -2.4541900
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.8902075      -1.9620314       3.3880296      -1.9972398
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.2920880      -2.7197530      -1.0787041      -1.8444717    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.1148062     -0.67313111     -0.80968809     -0.59324515
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1367973      -1.0772926       5.3193398      -1.6852698
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.46558374     -0.96071064      -1.4664207      -1.1046056    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.1810297      -1.1028217      -1.0818886      -1.0440232
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3795980      -1.8268847       1.8150111      -1.3302513
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.1461008      -2.1789379      -2.0311301      -2.3053474    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.2430949      -1.9675423      -1.6896597      -1.3942742
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.9114538      -1.5913409       4.4547763      -2.4923444
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.80629838      0.65120983     -0.14826693     -0.69206268    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.31323949     -0.31885436     -0.79235005     -9.79773924E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.34243223     -0.88081831       2.9591680     -8.48407373E-02
+
+! The matrix TFD_HAT(%1,%2,"SouthAsia")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  7.8331823       4.5401378       2.4538221       9.3963737    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  5.4299326       1.7158886       2.5063040       14.691540
+! %2=TransComm       OthServices     Soybeans        CGDS
+  7.3406305       4.9629827       41.071583     -0.75817251
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  25.288301     -7.38789812E-02   1.9983938     -0.29169816    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.29026410      -1.0817603     -0.11037313     -0.28592613
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.22534497     -0.27796039       23.668079      -1.2296884
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  4.1701355       1.2194198      0.17349967      0.79884022    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.0160226      -1.1626567      -1.4047048     -0.35906383
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.57170683      -1.6450745      -1.7140217     -0.47151583
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  18.996368       4.3225555      0.28059316      -2.0445263    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-5.16267195E-02  0.12881041     -0.36689833     -0.47009876
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.7503750      -2.5131493       44.332729     -4.05295147E-03
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  15.104980       5.7918682      -2.6231003      -3.1714814    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 6.40683323E-02  -1.0479685      -1.4379059      -2.9542661
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.5249496      -1.1278598       8.2957458      0.62749070
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  5.0838127      -6.1143994      -4.2077041      -6.4502077    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.6050234      -3.5919399      -5.7346549      -6.0893526
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.7631855      -3.4296119       20.282759      -6.7856216
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  7.3162694      -2.3946712      -11.869946      -3.3034666    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -5.2931619      -6.2713213      -6.3607874      -7.9148011
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -14.590643      -5.9296474       7.2950420      -10.083518
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  12.043345       6.2032886       3.9312348       6.2226472    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  6.8567972       6.9326344       7.5350895      0.23207156
+! %2=TransComm       OthServices     Soybeans        CGDS
+  4.6239686       3.6452999       11.509719      -2.4610860
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  9.3323612       4.3547864     -0.24438830     -0.30961436    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.46806756     -0.39523175     -0.48269749     -0.49368778
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.79157573      -1.6270467       18.585495     -0.80336589
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  22.631145      -1.4327871      -4.3162036      -3.7162623    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.2216501      -3.1784215      -3.8356125      -3.9147327
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.0822868      -3.7061934       31.360748      -9.2471704
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  24.077133      1.57082919E-02 -0.10971893       1.0617522    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.19097741     -0.77680171      0.16788965       1.5954095
+! %2=TransComm       OthServices     Soybeans        CGDS
+-7.17839524E-02  -3.5419323       2.3063171      -1.9153992
+
+! The matrix TFD_HAT(%1,%2,"NAmerica")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  6.7188635       4.0274801       2.0938618      0.19684362    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 1.01327998E-04 -5.75211383E-02 -1.67222656E-02 -0.41588905
+! %2=TransComm       OthServices     Soybeans        CGDS
+ 0.23541906      -1.0175877       1.0529441      8.01071972E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.8932576      0.13052550      0.11471541      5.48663586E-02! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 5.20619452E-02 -1.81194837E-03 -1.49704451E-02 -0.10168930
+! %2=TransComm       OthServices     Soybeans        CGDS
+-1.60929956E-03 -0.30606008       1.0683455     -2.34836782E-03
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.0050466      -1.3515899     -6.05335757E-02 -0.26432556    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.4214935     -0.11988793     -7.79259428E-02 -0.24886034
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.1680088      -1.9678286      0.93644619     -2.46821512E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.17641599       3.0272818     -0.42218977      0.26816323    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.22570099     -0.50842816     -0.31836870      -1.3716553
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -7.0257525      -3.4342144       1.0662512     -4.15510088E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  12.310151       3.9602218     -0.15034688     -1.21591997E-03! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-5.96046084E-05  8.64274800E-04  3.27826623E-04 -0.72138649
+! %2=TransComm       OthServices     Soybeans        CGDS
+-3.75130065E-02 -0.58106321       1.5202733     -0.38880935
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  5.2479448      0.70151627     -0.27446312     -8.85646604E-03! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 7.14752972E-02 -2.40983088E-02 -1.68414358E-02 -0.54553717
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.12527488      -1.7582914       1.1902076     -0.85233861
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.70060897      -1.3282086      -1.8051076     -0.18336467    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.71596968     -0.27460539     -0.97559357     -0.86740643
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -5.8015652      -1.6441404      -2.3665891     -0.53148007
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.3891855      -3.1041615      -4.7420659      -2.3082602    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.0405810      -5.4653049      -4.3466115     -0.88050205
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.9927034      -3.3923659      -2.3384337      -3.1344831
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  6.4670625       2.1949739     -0.12490626     -6.92721829E-02! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-4.06338498E-02 -6.67960048E-02 -5.92595637E-02 -0.21109036
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.39436838      -1.5939268       1.2235543      -1.4206363
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  5.3720059       1.5891900     -0.16084032     -0.16823076    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.15126202     -0.22934407     -0.17499050     -0.60925144
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.47924998      -1.6666229       1.1450580      -4.7182946
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.82968110       1.1826829       0.0000000     -4.63702623E-03! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000     -8.34395364E-03 -0.20813447       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+ 9.81040671E-02  2.75381049E-03   1.0916821       0.0000000
+
+! The matrix TFD_HAT(%1,%2,"LatinAmer")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.1552551       1.0950081       1.3079040      -1.8405436    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.30025721     -0.50351912      -4.0304956     -0.13743797
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.8124864      -3.7193675      0.24880528      -2.7523563
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.65286434      -3.3497574      -4.4210820      -3.0158520    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.5402528      -4.6298575      -5.1939826     -9.38249677E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.2005155      -4.2596464       3.5217106      -5.2043324
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.3842270      0.72511905      -1.8373848     -0.56139386    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -4.1931748      -3.9633980     -0.59767419      -3.4867432
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.2762172      -3.4108758       4.2652626      -2.7257316
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.0324428       1.8500013      -3.1438668      -4.4284215    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.75057554      -2.4710655      -4.7892056      -2.6415107
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -12.500826      -7.4185190       4.2583294      -1.9044224
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.9614426     -0.15968770      -4.6021681      -4.1644320    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.5970917      -3.8918462      -4.4824414      -4.3352013
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.7786031      -6.5941448       3.8304508      -2.6308992
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.67842329      -4.3446589      -5.7773781      -5.1339746    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -4.1841030      -5.7330875      -6.8891277      -5.8667746
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -5.1913362      -6.6236105       3.9309580      -10.216145
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.9790088      -6.1454186      -6.6460047      -4.1798892    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.7182865      -4.9264865      -4.4157562      -5.5662136
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -9.5201168      -8.5734816      -4.8808422      -10.807729
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -15.576566      -15.771329      -10.327660      -13.604012    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -15.856888      -13.229656      -15.075352      -8.6085138
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -10.394002      -7.0474591      -14.169886      -1.9245273
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.23635927      -1.0036870      -5.2401409      -2.4162672    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.6348907      -2.5974681      -3.5457587      -2.4277763
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -5.2426457      -8.2665043       2.9635026      -1.4061186
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.9508307      -2.1680543      -3.5405791      -3.4009321    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.1597891      -3.7591777      -3.6308923      -3.3357577
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.0949380      -3.8952374       1.1454360      -2.6969142
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.34146139      0.68790615     -0.74980056      -3.4604414    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.46235138      -1.7679665      -1.5029227      0.97244537
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.1106439      -7.2348685       3.9759295     -2.58677476E-03
+
+! The matrix TFD_HAT(%1,%2,"EU_28")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.1670594       3.6183376       1.1243726       1.6674594    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  1.7800573       2.2520204       3.2857077       1.0347482
+! %2=TransComm       OthServices     Soybeans        CGDS
+  1.0802561      -3.3013599       2.2765865       4.2490783
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.5444722       1.5573848      2.93859537E-03   1.2594407    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.46006128      0.92198324       1.5440649     -0.39919361
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.73791540      -6.0332727       1.6277248       3.4984264
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.2497337      -3.4853108      0.20559891      -1.5211577    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.90390867      0.46865204      9.70768631E-02 -0.26913968
+! %2=TransComm       OthServices     Soybeans        CGDS
+-3.40584107E-02  -6.7088575     -0.95729619      0.38568741
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.1234186       1.8500941      -2.4501517      -1.7139755    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.2193137      -3.4431510      -3.0397067      -6.5210547
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -9.5511112      -9.4568825       2.2337828      0.10252366
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  4.3519883       1.2408589      -1.6420991     -0.38167632    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.29584599     -0.43465880     -0.58992308      -2.0358896
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.0269889      -9.0810871       2.9190364      -4.5616627
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.9933696      0.17156780     -0.66246277     -0.25811160    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.24997532     -0.28093585     -0.24333249     -0.90080637
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.80695522      -8.5355206       2.7313373      -4.1372170
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -13.367353      -8.7006207      -9.5261383      -2.6772604    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.2011296     -0.53160983      -4.0232816      -1.8503059
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -28.718014      -8.5029078      -13.892405      -2.8697996
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -7.1751671      -11.570445      -8.5707312      -14.110874    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -13.457747      -15.117604      -15.411633      -3.0140243
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -8.5570068      -9.2255259      -2.8584728      -8.0969000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.6465099      0.84367508      0.29276237      0.20461139    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 6.00161515E-02  3.98615897E-02  8.48058239E-02 -0.66302741
+! %2=TransComm       OthServices     Soybeans        CGDS
+-9.79654938E-02  -4.4662766       2.4430618      -3.1877408
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.0080454      0.21329023      -1.2744768     -0.89723557    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.2330725      -1.1166362     -0.80134827      -2.2117224
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1973826      -4.6168661       2.3720450      -8.7550020
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.9000993       2.8949685      0.32808781       1.5080010    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.20420443       2.1186812       5.6216936      0.11422554
+! %2=TransComm       OthServices     Soybeans        CGDS
+  1.4849690      -2.1996717       2.0160885       1.0282748
+
+! The matrix TFD_HAT(%1,%2,"MENA")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.46971095      8.44535604E-02 -0.14329851      0.47520441    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 0.21436770     -0.75172633      -1.6570317     -0.44173700
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1365176     -0.74672383      -2.9903250      0.22117430
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.22551110      0.14212634      -1.2724202     -2.12743320E-02! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 2.90120356E-02  4.82016578E-02  -1.0752161     -0.77700126
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.7914042     -0.70266593      0.12878053     -0.10499647
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.57702905     -0.23222750     -0.42867878     -0.69757617    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -5.7939906      -1.1330454     -0.11955494     -2.17867102E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.9990145      -1.3031209       3.4130936     -0.85997856
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -4.2357864       1.3618208      -1.1483891      -2.3857324    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.39400175      -2.9099107      -3.2147608      -1.2791125
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -5.7126908      -1.6189015      -5.2126551      -1.0222243
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.24322875     -0.67564791     -0.66199225     -0.89964736    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.2427698      -2.0203509      -1.2617755      -1.0557301
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.6736653     -0.62416959      0.37216854      -5.6896243
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.64681405     -0.92859131     -0.72341913      -1.3331411    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.5771159      -1.7010993      -1.5566257     -0.61867148
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.3183048      -1.7077221      0.22695196      -5.2696009
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -13.685122      -16.505310     -0.44674668      -4.5077977    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.2218289      -2.5453818      -2.7426600      -1.1026468
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -13.632139      -2.2547250      -11.211226      -2.2286022
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.9191692      -3.5800717      -2.5920391      -4.8265915    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -9.5944986      -5.0861988      -5.2987108     -0.89713019
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.2199531      -2.4825392      -3.9569545      -1.9097333
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.28326055     -5.67947924E-02 -0.20642497     -0.16940695    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-4.19678912E-02 -9.57049057E-02 -0.18793720     -0.21651495
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.35677955     -0.46246949      0.18747962      0.10005701
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.16772819     -0.46239862     -0.81267881      -1.5110524    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.1506722      -1.4494041      -1.6518086      -1.1864890
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1899924      -1.1449876     -0.26625839     -0.93155146
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.0294855      0.29489681     -6.82483912E-02  0.67005295    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ 6.98278844E-02  0.32315037      6.89673284E-03  0.52382922
+! %2=TransComm       OthServices     Soybeans        CGDS
+ 0.63262719      2.76880618E-02  0.33948842       1.0353445
+
+! The matrix TFD_HAT(%1,%2,"SSA")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.89705998      0.72660065     -5.46514168E-02  -1.1859884    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.26844013     -0.25885874     -2.81135663E-02 -2.65170336E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.18762842     -0.20663865     -6.55102432E-02   8.4386787
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.92578310     -0.98375213     -0.75830162      -1.2578471    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.5213196      -2.3860393      -2.9499547      -1.8920779
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.60467035      -2.5453930      -3.2182558     -4.40403484E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.8580339      0.11733216      -1.6399310     -9.12786052E-02! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.18919607     -0.81710005     -0.87998676     -0.67956394
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3130368     -0.42166966      -4.2064242      5.44009358E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.9462540     -0.86956191      -1.2248735      -4.3457932    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -5.2182240      -3.6701007      -4.6708903      -3.9871845
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.9698806      -4.8849082      -5.0259032     -2.73391344E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -4.2397442      -1.8626724      -3.6924517      -3.8944006    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.7222517      -3.4293230      -5.7213802      -2.2648149
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.7508006      -2.0832188      -5.4102688      -7.9977479
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.9120681      -3.1901429      -1.7726710      -3.2100146    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -4.0858436      -1.9732587      -1.9974116      -2.3505073
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.9474959      -3.4920063      -5.2669797      -4.9301500
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -6.0144277      -4.9827113      -5.3795838      -4.0350080    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.8112102      -2.4012578      -3.0116582      -6.4491334
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -13.294267      -4.6521988      -3.9628263      -9.7100706
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.7834703      -1.9196309      -1.4148204      -1.4567555    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.6020299      -1.3659844      -1.6108819      -1.4837321
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.5273771      -1.1877344      -7.0209603      -1.2178481
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.88667387     -0.27286258      -1.2372935     -0.84679538    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.69463730     -0.83081859      -1.0016543     -0.77441919
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3584223      -1.4256058     -0.91180986      -1.0802321
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.18113171      -1.7498342      -1.9636469      -2.7484667    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.6687233      -2.2724209      -3.2563281      -1.9076687
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.8710928      -2.1474900      -1.0188957      -2.5270936
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  5.0018597     -2.14530695E-02   4.9712639     -0.46733534    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.33590826      0.37114170      0.34969717      0.10064828
+! %2=TransComm       OthServices     Soybeans        CGDS
+-2.78276224E-02 -0.26489475      -2.3631229       11.025453
+
+! The matrix TFD_HAT(%1,%2,"RestofWorld")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.0464003       2.5925364     -4.20869999E-02  0.69706780    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.69748217      -1.9113276     -0.86684412      -2.3486884
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.2620821      -7.1445270     -0.60545939     -0.77633226
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.5890672      -4.7976985     -0.54888576     -0.74287182    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.92801797     -0.18011020      0.13854599      -2.5572002
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.2559550      -6.2677503      0.63745630     -0.64015412
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.6197391      -4.0387077      -3.4976461      -1.6059656    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.90897727      -2.5881367      -2.6081319      -24.711046
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -13.377032      -13.659529     -0.18092978     -1.08826235E-02
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.1697843      -4.3419867      -2.1583097      -3.3740048    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -4.3030610      -1.3085899     -0.60017127      -3.2313070
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -6.5472875      -14.390664      -1.8154974      1.84777810E-03
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.2411406      -18.172272      -3.1806455      -2.3844490    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -5.3296728      -6.5143352      -3.9931183      -3.2898216
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.5945501      -9.3820095       1.6409374      -5.0972910
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  5.5076060      -7.2211814      -1.5230883      -1.7257318    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.4919703      -1.5081614      -1.7471759      -3.1212828
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.3899920      -7.3899517       2.6930864      -3.2184346
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -4.3210273      -15.147141      -7.7138906      -5.3393407    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -5.9164591      -2.7288337      -7.5658092      -7.2447872
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -18.872200      -10.056273      -2.0638077      -4.7212386
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.8740258      -2.3087151      -1.1968821      -1.9041357    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.4780726      -1.8331345      -1.9712311      -1.6789896
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.0645623      -8.1450634      -3.8779922      -5.1052675
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.7791800      7.69431889E-02 -0.18433860     -0.11780673    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.24421035     -0.11533295     -0.11490478     -0.55777496
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.22782516      -4.6355171       4.6185074     -0.53987706
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.7687776     -0.31378442     -0.18494432     -0.44641584    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.0782374     -0.57328600     -0.43052250      -1.2887312
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1334999      -3.8357227       2.0129063      -1.8749326
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.6456008       1.4248935     -0.56384557      0.43995571    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  1.2357762     -0.13827014      0.81354648      -1.1350962
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.6752279      -8.3115549       1.2320745     -0.98552865
+
+! The matrix TFD_HAT(%1,%2,"China")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.13997450       1.2360389      -1.5649892     -0.54896832    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000     -4.81850058E-02   0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.36539543     -0.24406800       1.5717107       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 5.05881980E-02  1.90234613E-02   0.0000000     -0.66316855    ! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000     -0.64742672     -9.93455946E-02   0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.71545261     -0.18526499       1.5927396       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.30693683      -7.5215325      -4.9661016     -0.56179464    ! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -8.9700336      -1.3184118      -5.8495641      -9.4991302
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.19955073      -5.0894632      -9.3831940       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -7.0746841       1.0832829      -5.4320331      -3.5962608    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -19.929588      -16.404932      -12.081861      -17.830618
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.8066115      -6.5703211       1.5932132       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.1376154     -0.61164194      -1.7063401      -2.1192539    ! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.5957263      -2.4607458      -2.2954366      -1.3611133
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.7024815      -1.8478369       0.0000000       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.3472407      -1.7562089      -3.3569727      -3.7346482    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.8560994      -3.1934388      -3.2443659      -3.5371628
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.1666191      -3.4265213      0.82801467      -3.2104950
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-8.04848894E-02  -1.5339195      -3.4941823      -3.3169963    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.3410716      -3.0076659      -3.1465955      -3.8815606
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -6.3461094      -2.9987159      0.13779886      -3.1202085
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.5029747      -3.2251337      -3.7355540      -3.3793693    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.5010099      -2.8295202      -3.0788491      -3.5736213
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.7704387      -3.9251981      -3.7006884      -3.6748571
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -7.5104494      -7.4254160      -6.2619476      -10.354424    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -11.727779      -9.8313961      -8.4809065      -6.3562927
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -5.1451411      -5.6158333       1.6086445      -7.0745916
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.99032009     -0.37379682      -4.0255108      -3.7663100    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.9031377      -3.5485535      -3.7603149      -3.8519692
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -4.3714843      -4.2841163       1.6072046      -6.1227732
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       1.3375148      5.96046493E-06   0.0000000    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       1.6086445       0.0000000
+
+! The matrix TFD_HAT(%1,%2,"USA")
+!   with %1 in TRAD_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.6156971       2.8284667     -0.16940695     -0.16934754    ! %1=GrainsCrops
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.13854356     -4.82802838E-02 -0.44755006     -0.59785086
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.33239138     -0.52226770       1.9511635       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.1286101      0.13250959     -2.18148250E-03 -2.54685376E-02! %1=MeatLstk
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-3.21864034E-04 -7.91994780E-02 -9.03524738E-03   0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+-1.94392558E-02 -0.21938725       3.5885561       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.6647491      0.32381025     -5.75747713E-03 -5.88190109E-02! %1=Extraction
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000     -1.44241157E-03 -1.01436814E-02 -9.12429094E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.24545592     -0.33841851       3.5634964       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-2.01423112E-02   2.1450052     -0.19078740     -0.81641984    ! %1=ProcFood
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-6.00778731E-03 -0.28459862     -1.18479999E-02  -6.8554754
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.6564236      -7.6916914       0.0000000       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.4772332       1.9514732     -1.66269317E-02 -1.05965827E-02! %1=TextWapp
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-7.66166672E-02 -0.15467286     -4.01693098E-02 -0.63712949
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.10179637      -1.6142861       3.5987458      -2.8629162
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.5446155      9.11589190E-02  -1.2149400     -0.29188776    ! %1=LightMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.17657042     -0.44773909     -0.50650471      -2.9556808
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.75873601     -0.52117056       3.4492228      -2.1793258
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.5293753      -4.2879825      -2.6825442      -1.5399640    ! %1=HeavyMnfc
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.36214098     -0.54982901      -1.3372723      -2.6527975
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -11.628286      -1.3971834      -1.0296395      -1.0677843
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.3809035     -0.47433805      -1.0082432      -1.7469573    ! %1=Util_Cons
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.4991522      -1.5534948      -1.8443683     -0.98035097
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.1027517     -0.65991002       2.5588210       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.3619590       1.2464858     -0.72771913     -0.48142242    ! %1=TransComm
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.75144452     -0.67685920     -0.45288992     -0.39695847
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.2822957      -2.0186229       3.6168849      0.33382979
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  3.6004987       1.1332785     -0.60881573     -0.70500493    ! %1=OthServices
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.0246300     -0.87305272     -0.85169411     -0.67236668
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.0498828      -1.0041895       3.6113882      -1.8669317
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       2.3760931       0.0000000     -0.13144597    ! %1=Soybeans
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+-7.21648708E-02  -2.2064669       3.6195920       0.0000000
+

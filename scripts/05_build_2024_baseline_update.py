@@ -6,6 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from gtap_runtime import RUNGTAP_DIR
+from gtap_scenario import GTAP_CHECK_ON_READ_LINES
 
 from gtap_observed_data import (
     BASE_YEAR,
@@ -211,7 +212,7 @@ def cmf_text(records: list[dict], base_year: int, target_year: int, model_name: 
         "! Swap: avareg(REG) is swapped with qgdp(REG); qgdp is then shocked to observed real GDP growth and avareg solves as implied regional TFP.",
         "! Standard endowment quantities qo(ENDW_COMM,REG) remain exogenous and unshocked unless a separate factor-endowment scenario is supplied.",
         f"! Model directory: {model_dir}",
-        "check-on-read all = warn ;",
+        *GTAP_CHECK_ON_READ_LINES,
         f"aux files = {RUNGTAP_DIR}\\GTAP;",
         f"file gtapSETS = {model_dir}\\sets.har;",
         f"file gtapDATA = {model_dir}\\basedata.har;",

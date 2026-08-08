@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gtap_runtime import RUNGTAP_DIR
+from gtap_scenario import GTAP_CHECK_ON_READ_LINES
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 RESULT_DIR = PROJECT_DIR / "result"
@@ -56,7 +57,7 @@ def build_cmf() -> str:
         "! Scenario: stylized 2015 economy from GTAP10A GTAP-APT 2014 baseline",
         f"! Generated: {datetime.now().isoformat(timespec='seconds')}",
         f"! Model directory: {MODEL_DIR}",
-        "check-on-read all = warn ;",
+        *GTAP_CHECK_ON_READ_LINES,
         f"aux files = {RUNGTAP_DIR}\\GTAP;",
         f"file gtapSETS = {MODEL_DIR}\\sets.har;",
         f"file gtapDATA = {MODEL_DIR}\\basedata.har;",

@@ -1,0 +1,487 @@
+
+ ! This file was created at 07:46:04 on 08-AUG-2026 by the program
+ !  <shocks.for 09-SEP-2020> [shocks.tab]
+ ! which accesses some of the routines in the GEMPACK software release
+ !  <GEMPACK Release 12.1.003   January 2020>
+ 
+ !     -------------------------------------------------------                
+ !    !            GEMPACK Software System Licence            !               
+ !    !   Limited Size Executable-image Licence for GEMPACK   !               
+ !    !                 Licence No.  GEI-9999                 !               
+ !    !          Licence for Release 12.2 of GEMPACK          !               
+ !    !       Installer-generated expiring licence. Ask       !               
+ !    !     sales at gempack.com for a permanent licence.     !               
+ !    !    (Your GEMPACK licence expires on 19-OCT-2026.)     !               
+ !     -------------------------------------------------------                
+    
+
+ !
+ ! Values of TF_HAT(ENDW_COMM,PROD_COMM,REG) - a real array of size 5x12x12
+ !------------------------------------------
+ !
+
+! Coefficient TF_HAT(ENDW_COMM,PROD_COMM,REG)
+
+ ! (Entries are written one "row" at a time - maximum of 4 per line.)
+
+ 
+ 5 12 12  real row_order;
+ 
+! (This array is shown as 12 matrices - each of size 5x12.)
+ 
+! The matrix TF_HAT(%1,%2,"Oceania")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.0323544      -2.1044044       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000      -2.0317593       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2455785      -2.7386906      -3.9990516      -3.8622060    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.9592638      -3.9049256      -3.9700933      -3.8961842
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.9696646      -3.9685211      -2.1734850       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2372277      -2.6457253      -4.0124311      -3.8412895    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.9405785      -3.8904257      -3.9541175      -3.8905027
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.8763070      -3.9869978      -2.1736219       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.12596455     -0.89369965      -3.8568621      -3.5014982    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.7204285      -3.6885154      -3.6268401      -3.5218084
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.5531778      -3.6467211      0.26409450       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -3.8281047       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"EastAsia")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  11.872965       2.8720031       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       5.0899339       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -20.372881      -16.435610      -19.438160      -27.822777    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -19.326569      -24.806971      -25.083038      -25.813560
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -24.193924      -23.584618      -21.933119       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -20.796913      -21.761255      -18.038059      -26.162270    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -15.905012      -23.374878      -24.193943      -25.361769
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -27.282450      -26.084763      -21.739578       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  9.3298817       4.4400163      -2.4182308      -2.9766812    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.6641722      -2.8956821      -2.8737357      -2.8746240
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.8897130      -2.9499099       8.8515606       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.5110307       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"SEAsia")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.70663863      -1.1546324       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000      -1.5213890       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.8666792      -2.2337754      -2.0245621      -1.4124453    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.4393188      -1.9551907      -2.7650602      -1.9238623
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.4600768      -2.5240355      -3.3932338       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.9301333      -2.9659858      -5.2236643      -2.2577317    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.1559701      -2.5943012      -3.3332849      -2.7179480
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.1723084      -2.6083467      -5.8943577       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  1.7197121     -0.80268556      -1.0086870      -1.3191780    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.83757097      -1.0299782      -1.3680836      -1.1942754
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3134547      -1.1761169       4.4373569       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -1.0829500       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"SouthAsia")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.14073089     -7.27719590E-02   0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000     -0.21363060       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.19208181     -0.11302557     -8.28413740E-02 -8.75302255E-02! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-9.66329500E-02 -3.69769633E-02 -3.85850742E-02 -3.77155095E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-5.81403114E-02 -0.24114966     -0.30701977       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+-0.10712580     -9.25637037E-02 -0.16465449     -9.53479558E-02! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-9.11239162E-02 -4.32542562E-02 -4.54100296E-02 -3.39750201E-02
+! %2=TransComm       OthServices     Soybeans        CGDS
+-5.85332438E-02 -0.19592923     -0.53543109       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.24183922      0.31811142     -0.13297971     -0.40926829    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.24749623     -0.16025807     -9.89886746E-02 -0.20210345
+! %2=TransComm       OthServices     Soybeans        CGDS
+-0.13926873     -0.15849939      0.17611949       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000     -7.32481033E-02   0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"NAmerica")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  9.8775988       6.4477496       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       9.3485165       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -7.3530788      -10.262458      -12.949504      -9.9267139    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -9.2426739      -11.278754      -10.218575      -12.795429
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -12.065781      -12.388046      -11.487552       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -8.0092802      -13.777603      -13.568602      -13.236379    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -12.564548      -13.899130      -13.427157      -13.842561
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -13.617482      -12.664527      -11.610995       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  10.911291       1.7719138      -4.1002407      -3.0436516    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.8291600      -3.1746330      -3.3399458      -3.6619141
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.2788603      -3.5931585      -3.0509238       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -4.1428585       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"LatinAmer")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.0400422      -2.3981009       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000      -2.6537578       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -9.0554991      -10.094514      -10.753147      -8.6013336    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -10.551130      -10.079220      -10.981770      -11.559611
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -11.797325      -12.670846      -10.349730       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -12.234198      -13.288827      -9.7930851      -12.108871    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -14.301053      -13.769893      -14.242836      -9.2925072
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -14.005949      -12.446341      -7.4323821       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ 0.32910177     -0.40625319      -2.5553439      -2.1657724    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.3196585      -2.4513655      -2.4630935      -2.7442160
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.6523795      -2.6085389      0.60383111       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.6732066       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"EU_28")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  60.540413       192.73119       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       95.878235       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -23.284342      -22.812733      -33.860783      -34.627823    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -34.508793      -34.880783      -34.744831      -34.182518
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -32.962158      -34.084187      -5.7733140       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -23.337807      -22.198732      -31.630211      -33.523823    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -33.742142      -33.953114      -33.740593      -32.791691
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -34.587410      -34.044346       21.322882       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  39.410561       42.372093      -3.0997851      -3.1126444    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.1243246      -2.3907528      -2.5581849      -2.9712944
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.7533033      -3.0180833       125.74368       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.8887687       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"MENA")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  2.7816422      -1.1944034       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       3.2932050       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -12.283718      -17.287111      -14.927974      -15.028743    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -18.082752      -16.527245      -15.749080      -15.087059
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -16.535067      -16.954342      -12.411593       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -9.5739851      -9.6450567      -15.913491      -12.047258    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -12.480952      -15.127369      -14.260700      -17.159998
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -12.453752      -16.830360      -8.3908272       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.0811070     -1.82118621E-02  -1.9566116     -0.96182150    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+-0.69683564      -1.2955723      -1.5599759      -1.5178397
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.0591611      -1.3956419     -0.84395909       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.0442519       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"SSA")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2604990      -2.1215723       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000      -2.3470287       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.3690851      -3.4830341      -4.3341975      -2.6433976    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.1794162      -3.4792361      -3.6717820      -3.1994486
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.3373284      -3.6571896      -3.4176483       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -3.4182823      -3.7839375      -4.9643469      -3.4878869    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.6706648      -3.6861379      -3.5277221      -2.6918576
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.6544785      -3.6684744      -3.3384645       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2035255      -2.0896759      -2.3535876      -1.5112489    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.1097965      -2.2484262      -2.0706105      -1.9939079
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.8732797      -1.9301227      -2.3247085       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.3121963       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"RestofWorld")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  9.9947901       10.169917       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       9.9272814       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -14.048470      -13.936073      -16.555775      -18.254946    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -19.632797      -19.151613      -17.164154      -18.370859
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -16.961246      -17.168047      -18.266525       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -16.464161      -18.262936      -20.122486      -19.459145    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -20.855894      -19.099964      -17.153454      -19.673178
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -17.423590      -18.548782      -19.715498       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  8.9570980       14.062176      -1.2474319      -1.3429117    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -1.3339418      -1.4562808      -1.5507681      -1.3847456
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -1.3247266      -1.5487692       8.1882010       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -1.2696894       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"China")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  13.996144       2.7134755       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       16.083755       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.3694636      -1.3267345      -2.3977261      -2.3977146    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.3977261      -2.3977146      -2.3977261      -2.3977261
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.3977261      -2.3977261      -1.1800750       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.5427605      -1.5251346      -2.3977261      -2.3977261    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.3977261      -2.3977146      -2.3977146      -2.3977261
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.3977146      -2.3977261      -1.1756279       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  4.4186239       2.1294792      -2.3977261      -2.3977261    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -2.3977261      -2.3977146      -2.3977261      -2.3977261
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -2.3977146      -2.3977261       13.964535       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -2.3977261       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+
+! The matrix TF_HAT(%1,%2,"USA")
+!   with %1 in ENDW_COMM and %2 in PROD_COMM. ++++++++++++++++++++++++++++++++
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  22.750559       5.3905468       0.0000000       0.0000000    ! %1=Land
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       26.250530       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -2.2192225      -11.101795      -12.126888      -12.126888    ! %1=UnSkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -12.126888      -12.126888      -12.126888      -12.126888
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -12.126888      -12.126888      -1.8904256       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+ -1.9927399      -7.7706499      -12.126888      -12.126898    ! %1=SkLab
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -12.126888      -12.126888      -12.126898      -12.126888
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -12.126888      -12.126898      -2.0624013       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  8.7897081       3.0843811      -3.1763542      -3.1763430    ! %1=Capital
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+ -3.1763430      -3.1763430      -3.1763430      -3.1763430
+! %2=TransComm       OthServices     Soybeans        CGDS
+ -3.1763430      -3.1763430       8.7466869       0.0000000
+
+! %2=GrainsCrops     MeatLstk        Extraction      ProcFood
+  0.0000000       0.0000000      -3.1763430       0.0000000    ! %1=NatRes
+! %2=TextWapp        LightMnfc       HeavyMnfc       Util_Cons
+  0.0000000       0.0000000       0.0000000       0.0000000
+! %2=TransComm       OthServices     Soybeans        CGDS
+  0.0000000       0.0000000       0.0000000       0.0000000
+

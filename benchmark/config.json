@@ -1,0 +1,28 @@
+{
+  "benchmark_version": "0.1.0",
+  "case_file": "scenarios/pilot.jsonl",
+  "conditions": [
+    "agent_tools",
+    "no_tools"
+  ],
+  "optional_conditions": [
+    "documentation_only"
+  ],
+  "repetitions": 5,
+  "fresh_session_per_run": true,
+  "randomize_case_order": true,
+  "solver_repeat_tolerance": 1e-06,
+  "required_run_metadata": [
+    "case_id",
+    "condition",
+    "provider",
+    "model",
+    "model_parameters",
+    "started_at",
+    "ended_at",
+    "prompt_sha256",
+    "system_prompt_sha256",
+    "code_commit",
+    "raw_response_path"
+  ]
+}

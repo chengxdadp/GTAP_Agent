@@ -9,9 +9,9 @@ from typing import Any
 from uuid import uuid4
 
 try:
-    from .agent import chat, chat_stream
+    from .agent import chat, chat_stream, reset_session
 except ImportError:  # Preserve `python web\server.py` as the primary entry point.
-    from agent import chat, chat_stream
+    from agent import chat, chat_stream, reset_session
 
 
 WEB_DIR = Path(__file__).resolve().parent
@@ -38,13 +38,17 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.flush()
 
     def do_POST(self) -> None:
-        if self.path not in {"/api/chat", "/api/chat_stream"}:
+        if self.path not in {"/api/chat", "/api/chat_stream", "/api/session/reset"}:
             self.send_json({"error": "Not found"}, status=404)
             return
 
         length = int(self.headers.get("Content-Length", "0"))
         payload = json.loads(self.rfile.read(length).decode("utf-8"))
         session_id = payload.get("session_id") or str(uuid4())
+        if self.path == "/api/session/reset":
+            self.send_json({"ok": True, "cleared": reset_session(session_id)})
+            return
+
         message = (payload.get("message") or "").strip()
         if not message:
             self.send_json({"error": "Empty message"}, status=400)
